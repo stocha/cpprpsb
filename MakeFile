@@ -1,0 +1,9 @@
+
+all: hello
+
+hello: hello.o
+	gcc -o hello hello.o
+hello.o: hello.cpp 
+	gcc -o hello.o -cpp hello.cpp
+
+
