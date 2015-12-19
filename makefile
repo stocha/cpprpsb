@@ -9,3 +9,11 @@ hello.o : hello.cpp
 cleanhello : 
 	rm hello.o hello
 
+# STACKBUFF TEST 002
+stackbuff : stackbuff.o
+	g++ -o stackbuff stackbuff.o
+stackbuff.o : stackbuff.cpp 
+	g++ -o stackbuff.o -c stackbuff.cpp
+cleanstackbuff : 
+	rm stackbuff.o stackbuff
+
