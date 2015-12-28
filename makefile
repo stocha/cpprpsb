@@ -17,3 +17,13 @@ stackbuff.o : stackbuff.cpp
 cleanstackbuff : 
 	rm stackbuff.o stackbuff
 
+
+# XOREQ CODE 003 
+xoreq : xoreq.o
+	g++ -o xoreq xoreq.o xoreqmain.cpp
+xoreq.o : xoreq.cpp 
+	g++ -o xoreq.o -c xoreq.cpp
+cleanxoreq : 
+	rm xoreq.o xoreq
+
+

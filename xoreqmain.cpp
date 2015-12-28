@@ -1,6 +1,10 @@
+
 #include <iostream>
 #include <set>
 #include "xoreq.h"
-es& es::add(int){
-	std::cout << "add";
+
+int main(){
+	es toto;
+	toto.add(3);
+
 }
