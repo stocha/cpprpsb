@@ -18,6 +18,15 @@ cleanstackbuff :
 	rm stackbuff.o stackbuff
 
 
+# KEYLEARN CODE 003 
+keylearn : keylearn.o
+	g++ -o keylearn keylearn.o keylearnmain.cpp
+keylearn.o : keylearn.cpp 
+	g++ -o keylearn.o -c keylearn.cpp
+cleankeylearn : 
+	rm keylearn.o keylearn
+
+
 # XOREQ CODE 003 
 xoreq : xoreq.o
 	g++ -o xoreq xoreq.o xoreqmain.cpp
