@@ -1,0 +1,3 @@
+xinit --> start x with a console
+epiphany --> raspberry pi browser
+leafpad --> graphical text editor
