@@ -10,3 +10,6 @@ public :
 //	friend es operator + ( es el, const es& er);
 	friend es operator + ( es el, const int& er);
 };
+
+
+void xoreqTest();
