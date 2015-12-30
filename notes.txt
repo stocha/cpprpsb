@@ -1,3 +1,4 @@
 xinit --> start x with a console
+openbox --> window boxing capability
 epiphany --> raspberry pi browser
 leafpad --> graphical text editor
