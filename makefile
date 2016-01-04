@@ -36,3 +36,12 @@ cleanxoreq :
 	rm xoreq.o xoreq
 
 
+# simplereg CODE 003 
+simplereg : simplereg.o
+	g++ -o simplereg simplereg.o simpleregmain.cpp
+simplereg.o : simplereg.cpp 
+	g++ -o simplereg.o -c simplereg.cpp
+cleansimplereg : 
+	rm simplereg.o simplereg
+
+
