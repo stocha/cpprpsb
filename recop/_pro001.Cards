@@ -1,0 +1,48 @@
+
+#include <iostream>
+#include <sstream>
+using namespace std;
+
+class Cards{
+	long long m;
+public :
+	Cards(long long m): m(m){};
+friend ostream& operator<<(ostream& o, const Cards& c);
+};
+
+inline long long selectbit(const long long m){
+	long long i=m-1;
+	i=~i&m;
+	return i;	
+}
+
+inline long long delbit(const long long m, const long long bit){
+	return m & ~bit;
+}	
+
+string cardString(const long long b){
+	ostringstream res;
+	
+	int i=__builtin_clz(b);
+	res << i << " ";	
+	
+	return res.str();
+}
+
+ostream& operator<<(ostream& o, const Cards& c){
+	long long m = c.m;
+	while(m!=0){
+		long long i=selectbit(m);
+		o << cardString(i) << " ";		
+		m=delbit(m,i);				
+	
+	}
+	return o;
+};
+
+int main()
+{
+	Cards c(-1);
+	cout << c << endl;
+	return 0;
+}
