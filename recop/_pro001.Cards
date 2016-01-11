@@ -3,26 +3,6 @@
 #include <sstream>
 using namespace std;
 
-class Cards{
-	const unsigned long long m;
-public :
-	Cards(unsigned long long m): m(m){};
-	
-	const Cards lastPerm(){
-		int nb=__builtin_popcountll(m);	
-		unsigned long long n=(1ULL << 53)| ((1ULL << (nb-1)) -1ULL);		
-		return Cards(n);
-	};
-	const Cards nextPerm(){
-		unsigned long long n=m;
-		return Cards(n);
-	}
-friend ostream& operator<<(ostream& o, const Cards& c);
-};
-Cards firstPerm(int nbCards){
-	unsigned long long n=(1ULL<<nbCards) -1;
-	return Cards(n);
-}
 
 inline long long selectbit(const unsigned long long m){
 	unsigned long long i=m-1;
@@ -32,11 +12,58 @@ inline long long selectbit(const unsigned long long m){
 
 inline long long delbit(const unsigned long long m, const unsigned long long bit){
 	return m & ~bit;
-}	
+}
+
+inline unsigned long long nextperm(unsigned long long m){
+	unsigned long long v=m; // current permutation of bits 
+	unsigned long long w; // next permutation of bits
+
+	unsigned long long t = v | (v - 1); // t gets v's least significant 0 bits set to 1
+	// Next set to 1 the most significant bit to change, 
+	// set to 0 the least significant ones, and add the necessary 1 bits.
+	w = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctzll(v) + 1)); 	
+	return w;
+}
+
+class Cards{
+	unsigned long long m;
+public :
+	Cards(const unsigned long long m): m(m){};
+
+	Cards() : Cards(0){};
+
+	const Cards lastPerm() const{
+		int nb=__builtin_popcountll(m);	
+		unsigned long long n=(1ULL << 52)| ((1ULL << (nb-1)) -1ULL);		
+		return Cards(n);
+	};
+	const Cards nextPerm(){
+		unsigned long long n=m;
+		Cards res=Cards(nextperm(n));
+		return res;
+	}
+
+	bool operator ==(const Cards &b) const{
+		return m==b.m;
+	}
+
+	bool operator <(const Cards &b) const{
+		return m<b.m;
+	}
+
+	
+
+friend ostream& operator<<(ostream& o, const Cards& c);
+};
+const Cards firstPerm(const int nbCards){
+	unsigned long long n=(1ULL<<nbCards) -1;
+	return Cards(n);
+}
+
 
 string cardString(const long long b){
 	ostringstream res;
-	
+
 	int i=__builtin_ctzll(b);
 	int v=i/4; 
 	int c=i%4;
@@ -46,14 +73,15 @@ string cardString(const long long b){
 	if(v==10) sv='Q';
 	if(v==11) sv='K';
 	if(v==12) sv='A';
+	if(v==13) sv='!';
 	char sc='E';
 	if(c==0) sc='s';
 	if(c==1) sc='h';
 	if(c==2) sc='d';
 	if(c==3) sc='c';
 	res << sv << sc ;	
-	
-	if(v>12) return "??";
+
+	if(v>13) return "??";
 	return res.str();
 }
 
@@ -63,7 +91,7 @@ ostream& operator<<(ostream& o, const Cards& c){
 		long long i=selectbit(m);
 		o << cardString(i) << " ";		
 		m=delbit(m,i);				
-	
+
 	}
 	return o;
 };
@@ -74,5 +102,12 @@ int main()
 	cout << c << endl;
 	cout << "firstPerm" << " " << firstPerm(7) << endl;
 	cout << "lastPerm" << " " << firstPerm(7).lastPerm() << endl;
+		
+	int sec=0;
+	for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
+		//if(sec++ % 1000 == 0)
+		cout << i << endl;
+		//if(sec++ > 1000) break;	
+	};
 	return 0;
 }
