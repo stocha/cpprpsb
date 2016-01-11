@@ -113,7 +113,7 @@ public :
 		return m<b.m;
 	}
 
-	
+friend class MonoCards;	
 friend class ColorCards;
 friend ostream& operator<<(ostream& o, const Cards& c);
 };
@@ -138,6 +138,38 @@ public :
 
 friend ostream& operator<<(ostream& o, const ColorCards& c);
 };
+
+class MonoCards{
+	unsigned long long m;
+	unsigned long long extractcol(unsigned long long dat,int coul){
+		unsigned long long mask=(0x1111111111111111ULL)<<coul;
+		unsigned long long n=mask&dat;
+		return n>>coul;		
+	}
+public :
+	
+	MonoCards(const Cards c){
+		unsigned long long n=extractcol(c.m,0);
+		n+=extractcol(c.m,1);
+		n+=extractcol(c.m,2);
+		n+=extractcol(c.m,3);
+		m=n;
+	}
+	
+
+friend ostream& operator<<(ostream& o, const MonoCards& c);
+};
+
+ostream& operator<<(ostream& o, const MonoCards& c){
+	unsigned long long m = c.m;
+	for(int i=0;i<13;i++){
+		unsigned long long v=(c.m>>(i<<2))&15;
+		if(v>0) o<< v <<'.'<< cardHighChar(i)<< ' ';
+	}
+	return o;
+};
+
+
 
 ostream& operator<<(ostream& o, const ColorCards& c){
 	unsigned long long m = c.m;
@@ -183,11 +215,12 @@ int main()
 			ColorCards h(i,1);
 			ColorCards d(i,2);
 			ColorCards c(i,3);
+			MonoCards mc(i);
 		if(sec%3000 ==0)
-			cout << i << " --- " << s << " / " << h << " / " << d << " / " << c  << endl;
+			cout << i << " --- " << s << " / " << h << " / " << d << " / " << c << " --- " << mc << endl;
 
 		sec++;
-		//if(sec >3000) break;
+		if(sec >100000) break;
 	}
 	t.stop();
 	cout << " il y  a " << sec << " combinaisons "<< endl;
