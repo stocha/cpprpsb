@@ -12,6 +12,15 @@ using u64 = unsigned long long;
 // ColorCards : sans cardinality same color
 // ValueCards : combinaisons
  
+inline u64 normalizeBool(u64 i){
+	if(i!=0) return 1;
+	return 0;
+}
+inline u64 normalizeSup(u64 a, u64 b){
+	if(a>b) return 1;
+	else return 0;
+}
+
 class BenchTime{
 	clock_t dstart;
 	clock_t dstop;
@@ -98,6 +107,9 @@ string cardString(const u64 b){
 class ValueCards{
 	u64 m=0;
 public:
+	void setAsMax(ValueCards v){
+		if(v.m>m) m=v.m;
+	}
 	void setQuinteFlush(){
 		const u64 mask=1ULL<<62;
 		m|=mask;
@@ -110,8 +122,8 @@ public:
 		const u64 mask=1ULL<<60;
 		m|=mask;
 	}
-	void setColor(){
-		const u64 mask=1ULL<<59;
+	void setColor(u64 cond){
+		const u64 mask=cond<<59;
 		m|=mask;
 	}
 	void setQuinte(){
@@ -245,6 +257,14 @@ public :
 	ColorCards(const u64 v){
 		m=v;
 	}
+	
+	ValueCards calcValue() const{
+		u64 nb=	__builtin_popcountll(m);
+		nb=normalizeSup(nb,4);	
+		ValueCards res;
+		res.setColor(nb);	
+		return res;
+	}	
 
 friend ostream& operator<<(ostream& o, const ColorCards& c);
 };
@@ -307,6 +327,16 @@ ostream& operator<<(ostream& o, const Cards& c){
 	}
 	return o;
 };
+
+ValueCards extractValue(Cards i){
+	ValueCards c;
+	ColorCards s(i,0);
+	ColorCards h(i,1);
+	ColorCards d(i,2);
+	ColorCards c(i,3);
+	MonoCards mc(i);
+	
+}
 
 int main()
 {
