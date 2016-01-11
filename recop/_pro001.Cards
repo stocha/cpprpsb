@@ -4,19 +4,33 @@
 using namespace std;
 
 class Cards{
-	long long m;
+	const unsigned long long m;
 public :
-	Cards(long long m): m(m){};
+	Cards(unsigned long long m): m(m){};
+	
+	const Cards lastPerm(){
+		int nb=__builtin_popcountll(m);	
+		unsigned long long n=(1ULL << 53)| ((1ULL << (nb-1)) -1ULL);		
+		return Cards(n);
+	};
+	const Cards nextPerm(){
+		unsigned long long n=m;
+		return Cards(n);
+	}
 friend ostream& operator<<(ostream& o, const Cards& c);
 };
+Cards firstPerm(int nbCards){
+	unsigned long long n=(1ULL<<nbCards) -1;
+	return Cards(n);
+}
 
-inline long long selectbit(const long long m){
-	long long i=m-1;
+inline long long selectbit(const unsigned long long m){
+	unsigned long long i=m-1;
 	i=~i&m;
 	return i;	
 }
 
-inline long long delbit(const long long m, const long long bit){
+inline long long delbit(const unsigned long long m, const unsigned long long bit){
 	return m & ~bit;
 }	
 
@@ -44,7 +58,7 @@ string cardString(const long long b){
 }
 
 ostream& operator<<(ostream& o, const Cards& c){
-	long long m = c.m;
+	unsigned long long m = c.m;
 	while(m!=0){
 		long long i=selectbit(m);
 		o << cardString(i) << " ";		
@@ -58,5 +72,7 @@ int main()
 {
 	Cards c(-1);
 	cout << c << endl;
+	cout << "firstPerm" << " " << firstPerm(7) << endl;
+	cout << "lastPerm" << " " << firstPerm(7).lastPerm() << endl;
 	return 0;
 }
