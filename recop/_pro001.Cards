@@ -106,8 +106,10 @@ int main()
 	int sec=0;
 	for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
 		//if(sec++ % 1000 == 0)
-		cout << i << endl;
+	//		cout << i << endl;
 		//if(sec++ > 1000) break;	
-	};
+		sec++;
+	}
+	cout << " il y  a " << sec << " combinaisons "<< endl;
 	return 0;
 }
