@@ -3,7 +3,14 @@
 #include <sstream>
 #include <ctime>
 using namespace std;
+using u64 = unsigned long long;
 
+// refclass
+// BenchTime : pour chronometrer
+// Cards : container cartes
+// MonoCards : sans couleurs raw
+// ColorCards : sans cardinality same color
+ 
 class BenchTime{
 	clock_t dstart;
 	clock_t dstop;
@@ -28,18 +35,18 @@ ostream& operator<<(ostream& o, const BenchTime& ts){
 	return o;
 }
 
-inline unsigned long long selectbit(const unsigned long long m){
-	unsigned long long i=m-1;
+inline u64 selectbit(const u64 m){
+	u64 i=m-1;
 	i=~i&m;
 	return i;	
 }
 
-inline long long delbit(const unsigned long long m, const unsigned long long bit){
+inline u64 delbit(const u64 m, const u64 bit){
 	return m & ~bit;
 }
 
-inline unsigned long long packOrdered4(const unsigned long long m){
-	unsigned long long n=m&1ULL;
+inline u64 packOrdered4(const u64 m){
+	u64 n=m&1ULL;
 	for(int i=0;i<12;i++){
 		
 		n=n|((m>>(3+3*i))&(1ULL<<(1+i)));
@@ -49,11 +56,11 @@ inline unsigned long long packOrdered4(const unsigned long long m){
 
 
 
-inline unsigned long long nextperm(unsigned long long m){
-	unsigned long long v=m; // current permutation of bits 
-	unsigned long long w; // next permutation of bits
+inline u64 nextperm(u64 m){
+	u64 v=m; // current permutation of bits 
+	u64 w; // next permutation of bits
 
-	unsigned long long t = v | (v - 1); // t gets v's least significant 0 bits set to 1
+	u64 t = v | (v - 1); // t gets v's least significant 0 bits set to 1
 	// Next set to 1 the most significant bit to change, 
 	// set to 0 the least significant ones, and add the necessary 1 bits.
 	w = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctzll(v) + 1)); 	
@@ -70,7 +77,7 @@ char cardHighChar(const int v){
 	if(v==13) sv='!';
 	return sv;
 }
-string cardString(const long long b){
+string cardString(const u64 b){
 	ostringstream res;
 
 	int i=__builtin_ctzll(b);
@@ -88,19 +95,19 @@ string cardString(const long long b){
 }
 
 class Cards{
-	unsigned long long m;
+	u64 m;
 public :
-	Cards(const unsigned long long m): m(m){};
+	Cards(const u64 m): m(m){};
 
 	Cards() : Cards(0){};
 
 	const Cards lastPerm() const{
 		int nb=__builtin_popcountll(m);	
-		unsigned long long n=(1ULL << 52)| ((1ULL << (nb-1)) -1ULL);		
+		u64 n=(1ULL << 52)| ((1ULL << (nb-1)) -1ULL);		
 		return Cards(n);
 	};
 	const Cards nextPerm() const{
-		unsigned long long n=m;
+		u64 n=m;
 		Cards res=Cards(nextperm(n));
 		return res;
 	}
@@ -120,16 +127,19 @@ friend ostream& operator<<(ostream& o, const Cards& c);
  
 
 const Cards firstPerm(const int nbCards){
-	unsigned long long n=(1ULL<<nbCards) -1;
+	u64 n=(1ULL<<nbCards) -1;
 	return Cards(n);
 }
 
+
+const u64 maskcolor=((0ULL -1 )/15);
+
 class ColorCards{
-	unsigned long long m;
+	u64 m;
 public :
 	ColorCards(const Cards c,int coul){
-		unsigned long long n=c.m;
-		unsigned long long mask=((0ULL -1 )/15)<<coul;
+		u64 n=c.m;
+		u64 mask=((0ULL -1 )/15)<<coul;
 		m=mask&c.m;
 		m=packOrdered4(m>>coul);
 
@@ -140,16 +150,16 @@ friend ostream& operator<<(ostream& o, const ColorCards& c);
 };
 
 class MonoCards{
-	unsigned long long m;
-	unsigned long long extractcol(unsigned long long dat,int coul){
-		unsigned long long mask=(0x1111111111111111ULL)<<coul;
-		unsigned long long n=mask&dat;
+	u64 m;
+	u64 extractcol(u64 dat,int coul){
+		u64 mask=maskcolor<<coul;
+		u64 n=mask&dat;
 		return n>>coul;		
 	}
 public :
 	
 	MonoCards(const Cards c){
-		unsigned long long n=extractcol(c.m,0);
+		u64 n=extractcol(c.m,0);
 		n+=extractcol(c.m,1);
 		n+=extractcol(c.m,2);
 		n+=extractcol(c.m,3);
@@ -161,9 +171,9 @@ friend ostream& operator<<(ostream& o, const MonoCards& c);
 };
 
 ostream& operator<<(ostream& o, const MonoCards& c){
-	unsigned long long m = c.m;
+	u64 m = c.m;
 	for(int i=0;i<13;i++){
-		unsigned long long v=(c.m>>(i<<2))&15;
+		u64 v=(c.m>>(i<<2))&15;
 		if(v>0) o<< v <<'.'<< cardHighChar(i)<< ' ';
 	}
 	return o;
@@ -172,9 +182,9 @@ ostream& operator<<(ostream& o, const MonoCards& c){
 
 
 ostream& operator<<(ostream& o, const ColorCards& c){
-	unsigned long long m = c.m;
+	u64 m = c.m;
 	while(m!=0){
-		long long i=selectbit(m);
+		u64 i=selectbit(m);
 		//o << cardString(i) << " ";		
 		int v= __builtin_ctzll(i);
 		o << cardHighChar(v) << " ";
@@ -188,9 +198,9 @@ ostream& operator<<(ostream& o, const ColorCards& c){
 
 
 ostream& operator<<(ostream& o, const Cards& c){
-	unsigned long long m = c.m;
+	u64 m = c.m;
 	while(m!=0){
-		long long i=selectbit(m);
+		u64 i=selectbit(m);
 		o << cardString(i) << " ";		
 		m=delbit(m,i);				
 
