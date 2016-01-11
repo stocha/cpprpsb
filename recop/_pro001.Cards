@@ -23,9 +23,23 @@ inline long long delbit(const long long m, const long long bit){
 string cardString(const long long b){
 	ostringstream res;
 	
-	int i=__builtin_ctz(b);
-	res << i << " ";	
+	int i=__builtin_ctzll(b);
+	int v=i/4; 
+	int c=i%4;
+	char sv='2'+v;
+	if(v==8) sv='T';
+	if(v==9) sv='J';
+	if(v==10) sv='Q';
+	if(v==11) sv='K';
+	if(v==12) sv='A';
+	char sc='E';
+	if(c==0) sc='s';
+	if(c==1) sc='h';
+	if(c==2) sc='d';
+	if(c==3) sc='c';
+	res << sv << sc ;	
 	
+	if(v>12) return "??";
 	return res.str();
 }
 
