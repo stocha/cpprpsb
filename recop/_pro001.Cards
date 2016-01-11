@@ -23,7 +23,7 @@ inline long long delbit(const long long m, const long long bit){
 string cardString(const long long b){
 	ostringstream res;
 	
-	int i=__builtin_clz(b);
+	int i=__builtin_ctz(b);
 	res << i << " ";	
 	
 	return res.str();
