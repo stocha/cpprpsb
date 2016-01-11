@@ -150,9 +150,19 @@ public:
 friend ostream& operator<<(ostream& o,const ValueCards& v);	
 };
 
+void outputHigh(ostream& o,const u64 v){
+	u64 m=v&((1ULL < 14)-1);
+	for(int i=0;i<13;i++){
+		u64 b=selectbit(m);
+		m^= b;
+		int hv=__builtin_ctzll(b); 
+		if(hv>0)
+			o<< hv << " ";
+	}
+}	
 ostream& operator<<(ostream& o,const ValueCards& v){
 	string disp[]={ ""
-		,"SC"
+		,"SC" // index 1
 		,"4 "
 		,"32"
 		,"Co"
@@ -161,8 +171,22 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		,"22"
 		,"2 "
 		,"1 "
+		,"ERROR 0"
+		,"ERROR 1"
 		
 	};	
+	for(int i=54;i<63;i++){
+		int ind=62-i+1;	
+		u64 mask=1ULL<<i;
+		if(v.m&mask !=0){
+			o << disp[ind] << " ";
+		}
+	
+	}
+	for(int i=3;i>=0;--i){
+		outputHigh(o,v.m>>(i*13));
+		o << '|';
+	}	
 	
 	return o;
 }
@@ -218,6 +242,9 @@ public :
 
 	}
 	
+	ColorCards(const u64 v){
+		m=v;
+	}
 
 friend ostream& operator<<(ostream& o, const ColorCards& c);
 };
