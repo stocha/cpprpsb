@@ -10,6 +10,7 @@ using u64 = unsigned long long;
 // Cards : container cartes
 // MonoCards : sans couleurs raw
 // ColorCards : sans cardinality same color
+// ValueCards : combinaisons
  
 class BenchTime{
 	clock_t dstart;
@@ -28,7 +29,8 @@ public:
 	}
 
 friend ostream& operator<<(ostream& o, const BenchTime& t);
-}; 
+};// fin BenchTime 
+
 ostream& operator<<(ostream& o, const BenchTime& ts){
 	double t=ts.tsec(); 
 	o<< t << "seconds ";
@@ -92,6 +94,77 @@ string cardString(const u64 b){
 
 	if(v>13) return "??";
 	return res.str();
+}
+class ValueCards{
+	u64 m=0;
+public:
+	void setQuinteFlush(){
+		const u64 mask=1ULL<<62;
+		m|=mask;
+	}
+	void setFour(){
+		const u64 mask=1ULL<<61;
+		m|=mask;
+	}
+	void setFull(){
+		const u64 mask=1ULL<<60;
+		m|=mask;
+	}
+	void setColor(){
+		const u64 mask=1ULL<<59;
+		m|=mask;
+	}
+	void setQuinte(){
+		const u64 mask=1ULL<<58;
+		m|=mask;
+	}
+	void setThree(){
+		const u64 mask=1ULL<<57;
+		m|=mask;
+	}
+	void setTwoPairs(){
+		const u64 mask=1ULL<<56;
+		m|=mask;
+	}
+	void setOnePair(){
+		const u64 mask=1ULL<<55;
+		m|=mask;
+	}
+	void setCard(){
+		const u64 mask=1LL<<54;
+		m|=mask;
+	}
+	void set4Desc(u64 d){
+		m|=d<<(13*3);
+	}
+	void set3Desc(u64 d){
+		m|=d<<(13*2);
+	}
+	void set2Desc(u64 d){
+		m|=d<<(13*1);
+	}
+	void set1Desc(u64 d){
+		m|=d;
+	}
+
+friend ostream& operator<<(ostream& o,const ValueCards& v);	
+};
+
+ostream& operator<<(ostream& o,const ValueCards& v){
+	string disp[]={ ""
+		,"SC"
+		,"4 "
+		,"32"
+		,"Co"
+		,"S "
+		,"3 "
+		,"22"
+		,"2 "
+		,"1 "
+		
+	};	
+	
+	return o;
 }
 
 class Cards{
@@ -230,7 +303,7 @@ int main()
 			cout << i << " --- " << s << " / " << h << " / " << d << " / " << c << " --- " << mc << endl;
 
 		sec++;
-		if(sec >100000) break;
+		//if(sec >100000) break;
 	}
 	t.stop();
 	cout << " il y  a " << sec << " combinaisons "<< endl;
