@@ -68,11 +68,11 @@ inline u64 delbit(const u64 m, const u64 bit){
 inline u64 packOrdered4(const u64 m){
 	u64 n=0;
 	
-	for(int i=0;i<4;i++){ 
+	for(int i=0;i<13;i++){ 
 
 		n=n| ((m>>(3*i))&(1ULL<<(i)));
 	}
-	return n;
+	return n&((1ULL << 13)-1);
 }
 
 
@@ -529,11 +529,11 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 //				if(vc.isFo())
 //				if(vc.isFu())
 				//if(vc.isTp())
-	//			if(vc.ispp() || vc.iscc())
+				if(vc.ispp() || vc.iscc())
 				cout << i <<"--" << vc <<endl ; 
 
 			sec++;
-	//		if(sec >5000000) break;
+			if(sec >5000000) break;
 		}
 		t.stop();
 		cout << " il y  a " << sec << " combinaisons "<< endl;
