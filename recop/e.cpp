@@ -150,11 +150,11 @@ class ValueCards{
 		m|=mask;
 	}
 	void setOnePair(u64 cond){
-		const u64 mask=1ULL<<55;
+		const u64 mask=cond<<55;
 		m|=mask;
 	}
 	void setCard(u64 cond){
-		const u64 mask=1ULL<<54;
+		const u64 mask=cond<<54;
 		m|=mask;
 	}
 	bool isSc() { return (m>>62)&1;}
