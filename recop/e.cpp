@@ -317,6 +317,43 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 
 			return res;
 		}
+		ValueCards hasFourValue(u64 h4,u64 h1) const{
+			ValueCards res;
+
+			res.setFour(normalizeBool(h4));
+			res.set4Desc(h4);
+			res.set1Desc(selectHbit(h1 & ~h4));
+			return res;
+		}
+		ValueCards hasFullValue(u64 h3,u64 h2) const {
+			ValueCards res;
+			res.setFull(normalizeBool(h3)&normalizeBool(h2));
+			res.set3Desc(h3);
+			res.set2Desc(h2);
+			return res;
+		}
+		ValueCards hasTwoPairValue(u64 h2,u64 h2bis,u64 h1) const{
+			ValueCards res;
+			res.set2Desc(h2|h2bis);
+			res.setTwoPairs(normalizeBool(h2|h2bis));
+			res.set1Desc(selectHbit(h1 & ~ (h2|h2bis)));
+			return res;
+		}	
+		ValueCards hasThreeValue(u64 h3,u64 h1) const{
+			ValueCards res;
+			res.setThree(normalizeBool(h3));
+			res.set3Desc(h3);
+			res.set1Desc(h1 & ~h3);
+			return res;
+		}
+	
+		ValueCards hasOnePairValue(u64 h2,u64 h1) const{
+			ValueCards res;
+			res.setOnePair(normalizeBool(h2));
+			res.set2Desc(h2);
+			res.set1Desc(h1 & ~h2);
+			return res;
+		}
 		public :
 
 		MonoCards(const Cards c){
@@ -341,25 +378,20 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 
 			u64 atLeast1=has4|has3|has2|has1;
 			u64 h4=selectHbit(has4);
-			u64 h3=selectHbit(has3);
+			u64 h3=selectHbit(has3 | (has4^h4));
 			u64 h2=selectHbit(has2  |(has3^h3));
-			u64 h2bis=selectHbit(has2  ^h2);
-			u64 h1=(has1 | (has2 & ~h2 & ~h2bis));		
+			u64 h2bis=selectHbit(has2  ^h2 |(has3^h3));
 
-			res.set4Desc(h4);
-			res.set3Desc(h3);
-			res.set2Desc(h2);
-			res.set1Desc(1);
 
-			res.setFour(normalizeBool(h4));
-			res.setFull(normalizeBool(h3)&normalizeBool(h2));
-			res.setThree(normalizeBool(h3));
-			res.setFull(normalizeBool(h2)&normalizeBool(h2bis));
-			res.setOnePair(normalizeBool(h2));
-			res.setCard(normalizeBool(h1));
+			res.set1Desc(atLeast1);
+			res.setCard(1);
 
-			ValueCards quV=hasQuinteValue(atLeast1);
-			res.setAsMax(quV);
+			res.setAsMax(hasQuinteValue(atLeast1));
+			res.setAsMax(hasFourValue(h4,atLeast1));
+			res.setAsMax(hasFullValue(h3,h2));
+			res.setAsMax(hasTwoPairValue(h2,h2bis,atLeast1));
+			res.setAsMax(hasThreeValue(h3,atLeast1));
+			res.setAsMax(hasOnePairValue(h2,atLeast1));
 			return res;
 		}
 
