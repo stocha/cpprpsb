@@ -280,6 +280,23 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			m=v;
 		}
 
+		ValueCards calcColor() const{
+			u64 nb=	__builtin_popcountll(m);
+			nb=normalizeSup(nb,4);	
+			ValueCards res;
+			res.setColor(nb);	
+			u64 h=m;
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+
+			res.set1Desc(h^m);	
+
+			return res;
+	
+		}
 		ValueCards calcValue() const{
 			u64 nb=	__builtin_popcountll(m);
 			nb=normalizeSup(nb,4);	
@@ -290,8 +307,19 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			u64 n2=n&(n>>1)&(n<<1);	
 			u64 isQFlush=normalizeBool(n2);
 			res.setQuinteFlush(isQFlush);
-			res.set1Desc(mx);	
+			u64 h=n2;
+			h=h|(h<<1)|(h>>1);
+			h=h|(h<<1)|(h>>1);
+			mx=h;
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
 
+			res.set1Desc(h^mx);	
+
+			res.setAsMax(calcColor());
 			return res;
 		}	
 
