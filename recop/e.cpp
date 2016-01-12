@@ -107,6 +107,7 @@ string cardString(const u64 b){
 class ValueCards{
 	u64 m=0;
 public:
+	bool hasValue(){ return ((-1ULL<<53)&m)!=0 ;}
 	void setAsMax(ValueCards v){
 		if(v.m>m) m=v.m;
 	}
@@ -143,7 +144,7 @@ public:
 		m|=mask;
 	}
 	void setCard(){
-		const u64 mask=1LL<<54;
+		const u64 mask=1ULL<<54;
 		m|=mask;
 	}
 	void set4Desc(u64 d){
@@ -163,13 +164,14 @@ friend ostream& operator<<(ostream& o,const ValueCards& v);
 };
 
 void outputHigh(ostream& o,const u64 v){
-	u64 m=v&((1ULL < 14)-1);
-	for(int i=0;i<13;i++){
+	u64 m=v&((1ULL << 14)-1);
+
+	while(m!=0){
 		u64 b=selectbit(m);
 		m^= b;
 		int hv=__builtin_ctzll(b); 
-		if(hv>0)
-			o<< hv << " ";
+		
+		o<< cardHighChar(hv) << " ";
 	}
 }	
 ostream& operator<<(ostream& o,const ValueCards& v){
@@ -188,9 +190,11 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		
 	};	
 	for(int i=54;i<63;i++){
+	//for(int i=0;i<63;i++){
 		int ind=62-i+1;	
-		u64 mask=1ULL<<i;
-		if(v.m&mask !=0){
+		u64 mask=(1ULL<<i);
+		//o << (v.m&mask); 
+		if((v.m&mask) !=0){
 			o << disp[ind] << " ";
 		}
 	
@@ -264,9 +268,11 @@ public :
 		ValueCards res;
 		res.setColor(nb);	
 		u64 n=m&(m>>1)&(m<<1);
-	        u64 n2=n&(n2>>1)&(n2<<1);	
+	        u64 n2=n&(n>>1)&(n<<1);	
 		u64 isQFlush=normalizeBool(n2);
 		res.setQuinteFlush(isQFlush);
+		res.set1Desc(m);	
+		
 		return res;
 	}	
 
@@ -368,11 +374,11 @@ int main()
 			MonoCards mc(i);
 
 			ValueCards vc=extractValue(i);
-		if(sec%3000 ==0)
+		if(sec%3000 ==0 || vc.hasValue())
 			cout << i <<"--" << vc << " --- " << s << " / " << h << " / " << d << " / " << c << " --- " << mc << endl;
 
 		sec++;
-		//if(sec >100000) break;
+		if(sec >100000) break;
 	}
 	t.stop();
 	cout << " il y  a " << sec << " combinaisons "<< endl;
