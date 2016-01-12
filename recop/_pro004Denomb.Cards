@@ -1,0 +1,54 @@
+#include <iostream>
+using namespace std;
+unsigned long numKey=0;
+void calcWithKey(int nbleft, int etages,unsigned long long key){
+	if(nbleft >  etages*4+4) return ;
+	if(nbleft<0) return ;
+	if(etages==0){
+	if(key > 10000)	
+		cout << numKey++ << " : " << key << endl; 
+	}
+	for(int i=0;i<5;i++){
+		calcWithKey(nbleft-i,etages-1,key|(i<<etages)); 
+	}
+	
+
+
+}
+int calc(int nbleft,int etages){
+	if(nbleft >  etages*4) return 0;
+	if(nbleft==0) return 1;
+	if(nbleft<0) return 0;
+	if(etages==1) return 1;
+	int res=0;
+	for(int i=0;i<5;i++){
+		int leftare=calc(nbleft-i,etages-1); 
+
+		if(etages>=1){
+			if(leftare>1024){
+				for(int k=0;k<13-etages;k++) cout << "  ";
+				cout << "etage " << etages << " left " << nbleft << " pour " << i << " y a " << leftare << endl;
+			}		
+
+		}
+		res+=leftare;
+	}
+	return res;
+}
+
+void two2(){
+	for(int i=0;i<26;i++){
+		cout << (1<<i) << endl;
+	}
+}
+
+int main(){
+
+	int r=13*13*13*13;
+	r=r*13*13*13;
+	two2();
+	cout << r << endl;
+	cout << "total for 7 is  "<< endl << calc(7,13) << endl;
+	calcWithKey(7,12,0);
+	return 0;
+}
