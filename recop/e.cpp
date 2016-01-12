@@ -466,20 +466,12 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		BenchTime t;
 		t.start();
 		for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
-			//	cout << i << endl;
-			ColorCards s(i,0);
-			ColorCards h(i,1);
-			ColorCards d(i,2);
-			ColorCards c(i,3);
-			MonoCards mc(i);
-
 			ValueCards vc=extractValue(i);
-			bool inhib=false;
-			//if(sec%3000000 ==1 && !inhib)
-				cout << i <<"--" << vc << " --- " << s << " / " << h << " / " << d << " / " << c << " --- " << mc << endl;
+			if((sec>>10) & 1 == 1)
+				cout << i <<"--" << vc ; 
 
 			sec++;
-			if(sec >500000) break;
+			//if(sec >500000) break;
 		}
 		t.stop();
 		cout << " il y  a " << sec << " combinaisons "<< endl;
