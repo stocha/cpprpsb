@@ -63,14 +63,16 @@ inline u64 selectbit(const u64 m){
 inline u64 delbit(const u64 m, const u64 bit){
 	return m & ~bit;
 }
+	const u64 maskcolor=0x1111111111111111ULL;
 
 inline u64 packOrdered4(const u64 m){
-	u64 n=m&1ULL;
-	for(int i=0;i<12;i++){
+	u64 n=0;
+	
+	for(int i=0;i<13;i++){ 
 
-		n=n|((m>>(3+3*i))&(1ULL<<(1+i)));
+		n=n| ((m>>(3*i))&(1ULL<<(i)));
 	}
-	return n;
+	return n&((1ULL << 13)-1);
 }
 
 
@@ -148,11 +150,11 @@ class ValueCards{
 		m|=mask;
 	}
 	void setOnePair(u64 cond){
-		const u64 mask=1ULL<<55;
+		const u64 mask=cond<<55;
 		m|=mask;
 	}
 	void setCard(u64 cond){
-		const u64 mask=1ULL<<54;
+		const u64 mask=cond<<54;
 		m|=mask;
 	}
 	bool isSc() { return (m>>62)&1;}
@@ -187,8 +189,10 @@ void outputHigh(ostream& o,const u64 v){
 		u64 b=selectbit(m);
 		m^= b;
 		int hv=__builtin_ctzll(b); 
-
+		if(hv<=12)
 		o<< cardHighChar(hv) << " ";
+		else
+			o << "#" <<hv << " ";
 	}
 }	
 ostream& operator<<(ostream& o,const ValueCards& v){
@@ -263,7 +267,6 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 	}
 
 
-	const u64 maskcolor=0x1111111111111111ULL;
 
 	class ColorCards{
 		u64 m;
@@ -280,18 +283,45 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			m=v;
 		}
 
-		ValueCards calcValue() const{
+		ValueCards calcColor() const{
 			u64 nb=	__builtin_popcountll(m);
 			nb=normalizeSup(nb,4);	
 			ValueCards res;
 			res.setColor(nb);	
+			u64 h=m;
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+
+			res.set1Desc(h^m);	
+
+			return res;
+	
+		}
+		ValueCards calcValue() const{
+			u64 nb=	__builtin_popcountll(m);
+			nb=normalizeSup(nb,4);	
+			ValueCards res;
 			u64 mx=(m<<1)|(1&(m>>12));
 			u64 n=mx&(mx>>1)&(mx<<1);
 			u64 n2=n&(n>>1)&(n<<1);	
 			u64 isQFlush=normalizeBool(n2);
 			res.setQuinteFlush(isQFlush);
-			res.set1Desc(mx);	
+			u64 h=n2;
+			h=h|(h<<1)|(h>>1);
+			h=h|(h<<1)|(h>>1);
+			mx=h;
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
 
+			res.set1Desc((h^mx)>>1);	
+
+			res.setAsMax(calcColor());
 			return res;
 		}	
 
@@ -311,8 +341,17 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			u64 n=mx&(mx>>1)&(mx<<1);
 			u64 n2=n&(n>>1)&(n<<1);	
 			u64 isQuinte=normalizeBool(n2);
-
-			res.set1Desc(atLeast1>>1);
+			u64 h=n2;
+			h=h|(h<<1)|(h>>1);
+			h=h|(h<<1)|(h>>1);
+			n2=h;
+			
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			res.set1Desc((n2^h)>>1);
 			res.setQuinte(isQuinte);
 
 			return res;
@@ -335,7 +374,7 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		ValueCards hasTwoPairValue(u64 h2,u64 h2bis,u64 h1) const{
 			ValueCards res;
 			res.set2Desc(h2|h2bis);
-			res.setTwoPairs(normalizeBool(h2|h2bis));
+			res.setTwoPairs(normalizeBool(h2)&normalizeBool(h2bis));
 			res.set1Desc(selectHbit(h1 & ~ (h2|h2bis)));
 			return res;
 		}	
@@ -343,7 +382,11 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			ValueCards res;
 			res.setThree(normalizeBool(h3));
 			res.set3Desc(h3);
-			res.set1Desc(h1 & ~h3);
+			u64 h = h1 & ~h3;
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			
+			res.set1Desc(h1^h & ~h3);
 			return res;
 		}
 	
@@ -351,7 +394,11 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			ValueCards res;
 			res.setOnePair(normalizeBool(h2));
 			res.set2Desc(h2);
-			res.set1Desc(h1 & ~h2);
+			u64 h =h1 & ~h2;
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			res.set1Desc(h1 & ~h2 ^h);
 			return res;
 		}
 		public :
@@ -378,12 +425,19 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 
 			u64 atLeast1=has4|has3|has2|has1;
 			u64 h4=selectHbit(has4);
-			u64 h3=selectHbit(has3 | (has4^h4));
-			u64 h2=selectHbit(has2  |(has3^h3));
-			u64 h2bis=selectHbit(has2  ^h2 |(has3^h3));
+			has3= ( has3 | has4 ) & ~h4;
+			u64 h3=selectHbit(has3 );
+			has2=( has2 | has3 ) & ~h3;
+			u64 h2=selectHbit(has2 );
+			u64 h2bis=selectHbit(has2 & ~h2);
 
-
-			res.set1Desc(atLeast1);
+			u64 h=atLeast1;
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			res.set1Desc(atLeast1^h);
 			res.setCard(1);
 
 			res.setAsMax(hasQuinteValue(atLeast1));
@@ -468,10 +522,18 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
 			ValueCards vc=extractValue(i);
 			if((sec&((1<<17)-1))  == 1)
+		//		if(vc.iscc() || vc.ispp() || vc.isTp())
+		//		if(vc.isQu() || vc.isSc() || vc.isCo())
+	//			if(vc.isSc())
+//				if(vc.isQu())
+//				if(vc.isFo())
+//				if(vc.isFu())
+				//if(vc.isTp())
+	//			if(vc.ispp() || vc.iscc())
 				cout << i <<"--" << vc <<endl ; 
 
 			sec++;
-			//if(sec >500000) break;
+	//		if(sec >5000000) break;
 		}
 		t.stop();
 		cout << " il y  a " << sec << " combinaisons "<< endl;
