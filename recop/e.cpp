@@ -63,12 +63,14 @@ inline u64 selectbit(const u64 m){
 inline u64 delbit(const u64 m, const u64 bit){
 	return m & ~bit;
 }
+	const u64 maskcolor=0x1111111111111111ULL;
 
 inline u64 packOrdered4(const u64 m){
-	u64 n=m&1ULL;
-	for(int i=0;i<13;i++){
+	u64 n=0;
+	
+	for(int i=0;i<4;i++){ 
 
-		n=n|((m>>(3+3*i))&(1ULL<<(1+i)));
+		n=n| ((m>>(3*i))&(1ULL<<(i)));
 	}
 	return n;
 }
@@ -181,14 +183,16 @@ class ValueCards{
 };
 
 void outputHigh(ostream& o,const u64 v){
-	u64 m=v&((1ULL << 13)-1);
+	u64 m=v; //&((1ULL << 13)-1);
 
 	while(m!=0){
 		u64 b=selectbit(m);
 		m^= b;
 		int hv=__builtin_ctzll(b); 
-
+		if(hv<=12)
 		o<< cardHighChar(hv) << " ";
+		else
+			o << "#" <<hv << " ";
 	}
 }	
 ostream& operator<<(ostream& o,const ValueCards& v){
@@ -263,7 +267,6 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 	}
 
 
-	const u64 maskcolor=0x1111111111111111ULL;
 
 	class ColorCards{
 		u64 m;
@@ -518,15 +521,19 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		t.start();
 		for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
 			ValueCards vc=extractValue(i);
-			if((sec&((1<<13)-1))  == 1)
+			if((sec&((1<<17)-1))  == 1)
 		//		if(vc.iscc() || vc.ispp() || vc.isTp())
 		//		if(vc.isQu() || vc.isSc() || vc.isCo())
 	//			if(vc.isSc())
-				if(vc.isQu())
+//				if(vc.isQu())
+//				if(vc.isFo())
+//				if(vc.isFu())
+				//if(vc.isTp())
+	//			if(vc.ispp() || vc.iscc())
 				cout << i <<"--" << vc <<endl ; 
 
 			sec++;
-		//	if(sec >5000000) break;
+	//		if(sec >5000000) break;
 		}
 		t.stop();
 		cout << " il y  a " << sec << " combinaisons "<< endl;
