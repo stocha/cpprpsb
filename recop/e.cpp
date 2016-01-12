@@ -63,11 +63,11 @@ inline u64 selectbit(const u64 m){
 inline u64 delbit(const u64 m, const u64 bit){
 	return m & ~bit;
 }
-	const u64 maskcolor=0x1111111111111111ULL;
+const u64 maskcolor=0x1111111111111111ULL;
 
 inline u64 packOrdered4(const u64 m){
 	u64 n=0;
-	
+
 	for(int i=0;i<13;i++){ 
 
 		n=n| ((m>>(3*i))&(1ULL<<(i)));
@@ -190,7 +190,7 @@ void outputHigh(ostream& o,const u64 v){
 		m^= b;
 		int hv=__builtin_ctzll(b); 
 		if(hv<=12)
-		o<< cardHighChar(hv) << " ";
+			o<< cardHighChar(hv) << " ";
 		else
 			o << "#" <<hv << " ";
 	}
@@ -227,316 +227,350 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 	}	
 
 	return o;
-	}
+}
 
-	class Cards{
-		u64 m;
-		public :
-		Cards(const u64 m): m(m){};
+class Cards{
+	u64 m;
+	public :
+	Cards(const u64 m): m(m){};
 
-		Cards() : Cards(0){};
+	Cards() : Cards(0){};
 
-		const Cards lastPerm() const{
-			int nb=__builtin_popcountll(m);	
-			u64 n=(1ULL << 52)| ((1ULL << (nb-1)) -1ULL);		
-			return Cards(n);
-		};
-		const Cards nextPerm() const{
-			u64 n=m;
-			Cards res=Cards(nextperm(n));
-			return res;
-		}
-
-		bool operator ==(const Cards &b) const{
-			return m==b.m;
-		}
-
-		bool operator <(const Cards &b) const{
-			return m<b.m;
-		}
-
-		friend class MonoCards;	
-		friend class ColorCards;
-		friend ostream& operator<<(ostream& o, const Cards& c);
-	};
-
-
-	const Cards firstPerm(const int nbCards){
-		u64 n=(1ULL<<nbCards) -1;
+	const Cards lastPerm() const{
+		int nb=__builtin_popcountll(m);	
+		u64 n=(1ULL << 52)| ((1ULL << (nb-1)) -1ULL);		
 		return Cards(n);
+	};
+	const Cards nextPerm() const{
+		u64 n=m;
+		Cards res=Cards(nextperm(n));
+		return res;
+	}
+
+	bool operator ==(const Cards &b) const{
+		return m==b.m;
+	}
+
+	bool operator <(const Cards &b) const{
+		return m<b.m;
+	}
+
+	friend class MonoCards;	
+	friend class ColorCards;
+	friend ostream& operator<<(ostream& o, const Cards& c);
+};
+
+
+const Cards firstPerm(const int nbCards){
+	u64 n=(1ULL<<nbCards) -1;
+	return Cards(n);
+}
+
+
+
+class ColorCards{
+	u64 m;
+	public :
+	ColorCards(const Cards c,int coul){
+		u64 n=c.m;
+		u64 mask=((0ULL -1 )/15)<<coul;
+		m=mask&c.m;
+		m=packOrdered4(m>>coul);
+
+	}
+
+	ColorCards(const u64 v){
+		m=v;
+	}
+
+	ValueCards calcColor() const{
+		u64 nb=	__builtin_popcountll(m);
+		nb=normalizeSup(nb,4);	
+		ValueCards res;
+		res.setColor(nb);	
+		u64 h=m;
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+
+		res.set1Desc(h^m);	
+
+		return res;
+
+	}
+	ValueCards calcValue() const{
+		u64 nb=	__builtin_popcountll(m);
+		nb=normalizeSup(nb,4);	
+		ValueCards res;
+		u64 mx=(m<<1)|(1&(m>>12));
+		u64 n=mx&(mx>>1)&(mx<<1);
+		u64 n2=n&(n>>1)&(n<<1);	
+		u64 isQFlush=normalizeBool(n2);
+		res.setQuinteFlush(isQFlush);
+		u64 h=n2;
+		h=h|(h<<1)|(h>>1);
+		h=h|(h<<1)|(h>>1);
+		mx=h;
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+
+		res.set1Desc((h^mx)>>1);	
+
+		res.setAsMax(calcColor());
+		return res;
+	}	
+
+	friend ostream& operator<<(ostream& o, const ColorCards& c);
+};
+
+class MonoCards{
+	u64 m;
+	u64 extractcol(u64 dat,int coul){
+		u64 n=maskcolor&(dat>>coul);
+		return n;		
+	}
+	ValueCards hasQuinteValue(u64 atLeast1) const{
+		ValueCards res;
+		atLeast1=(atLeast1<<1)|(1&(atLeast1>>12));	
+		u64 mx=atLeast1;	
+		u64 n=mx&(mx>>1)&(mx<<1);
+		u64 n2=n&(n>>1)&(n<<1);	
+		u64 isQuinte=normalizeBool(n2);
+		u64 h=n2;
+		h=h|(h<<1)|(h>>1);
+		h=h|(h<<1)|(h>>1);
+		n2=h;
+
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		res.set1Desc((n2^h)>>1);
+		res.setQuinte(isQuinte);
+
+		return res;
+	}
+	ValueCards hasFourValue(u64 h4,u64 h1) const{
+		ValueCards res;
+
+		res.setFour(normalizeBool(h4));
+		res.set4Desc(h4);
+		res.set1Desc(selectHbit(h1 & ~h4));
+		return res;
+	}
+	ValueCards hasFullValue(u64 h3,u64 h2) const {
+		ValueCards res;
+		res.setFull(normalizeBool(h3)&normalizeBool(h2));
+		res.set3Desc(h3);
+		res.set2Desc(h2);
+		return res;
+	}
+	ValueCards hasTwoPairValue(u64 h2,u64 h2bis,u64 h1) const{
+		ValueCards res;
+		res.set2Desc(h2|h2bis);
+		res.setTwoPairs(normalizeBool(h2)&normalizeBool(h2bis));
+		res.set1Desc(selectHbit(h1 & ~ (h2|h2bis)));
+		return res;
+	}	
+	ValueCards hasThreeValue(u64 h3,u64 h1) const{
+		ValueCards res;
+		res.setThree(normalizeBool(h3));
+		res.set3Desc(h3);
+		u64 h = h1 & ~h3;
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+
+		res.set1Desc(h1^h & ~h3);
+		return res;
+	}
+
+	ValueCards hasOnePairValue(u64 h2,u64 h1) const{
+		ValueCards res;
+		res.setOnePair(normalizeBool(h2));
+		res.set2Desc(h2);
+		u64 h =h1 & ~h2;
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		res.set1Desc(h1 & ~h2 ^h);
+		return res;
+	}
+	public :
+
+	MonoCards(const Cards c){
+		u64 n=extractcol(c.m,0);
+		n+=extractcol(c.m,1);
+		n+=extractcol(c.m,2);
+		n+=extractcol(c.m,3);
+		m=n;
+	}
+	ValueCards calcValue() const{
+		ValueCards res;
+
+		u64 has4= (maskcolor)&(m>>2);
+		u64 has3= (maskcolor)&(m>>1) & (m)& ~has4;
+		u64 has2= (maskcolor)&(m>>1) & ~has3;
+		u64 has1= (maskcolor)&m&~has2&~has3&~has4;
+
+		has4=packOrdered4(has4);
+		has3=packOrdered4(has3);
+		has2=packOrdered4(has2);
+		has1=packOrdered4(has1);
+
+		u64 atLeast1=has4|has3|has2|has1;
+		u64 h4=selectHbit(has4);
+		has3= ( has3 | has4 ) & ~h4;
+		u64 h3=selectHbit(has3 );
+		has2=( has2 | has3 ) & ~h3;
+		u64 h2=selectHbit(has2 );
+		u64 h2bis=selectHbit(has2 & ~h2);
+
+		u64 h=atLeast1;
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		h ^=selectHbit(h);	
+		res.set1Desc(atLeast1^h);
+		res.setCard(1);
+
+		res.setAsMax(hasQuinteValue(atLeast1));
+		res.setAsMax(hasFourValue(h4,atLeast1));
+		res.setAsMax(hasFullValue(h3,h2));
+		res.setAsMax(hasTwoPairValue(h2,h2bis,atLeast1));
+		res.setAsMax(hasThreeValue(h3,atLeast1));
+		res.setAsMax(hasOnePairValue(h2,atLeast1));
+		return res;
 	}
 
 
+	friend ostream& operator<<(ostream& o, const MonoCards& c);
+};
 
-	class ColorCards{
-		u64 m;
-		public :
-		ColorCards(const Cards c,int coul){
-			u64 n=c.m;
-			u64 mask=((0ULL -1 )/15)<<coul;
-			m=mask&c.m;
-			m=packOrdered4(m>>coul);
+ostream& operator<<(ostream& o, const MonoCards& c){
+	u64 m = c.m;
+	for(int i=0;i<13;i++){
+		u64 v=(c.m>>(i<<2))&15;
+		if(v>0) o<< v <<'.'<< cardHighChar(i)<< ' ';
+	}
+	return o;
+};
 
-		}
 
-		ColorCards(const u64 v){
-			m=v;
-		}
 
-		ValueCards calcColor() const{
-			u64 nb=	__builtin_popcountll(m);
-			nb=normalizeSup(nb,4);	
-			ValueCards res;
-			res.setColor(nb);	
-			u64 h=m;
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
+ostream& operator<<(ostream& o, const ColorCards& c){
+	u64 m = c.m;
+	while(m!=0){
+		u64 i=selectbit(m);
+		//o << cardString(i) << " ";		
+		int v= __builtin_ctzll(i);
+		o << cardHighChar(v) << " ";
+		m=delbit(m,i);				
 
-			res.set1Desc(h^m);	
+	}
+	return o;
+};
 
-			return res;
+
+
+
+ostream& operator<<(ostream& o, const Cards& c){
+	u64 m = c.m;
+	while(m!=0){
+		u64 i=selectbit(m);
+		o << cardString(i) << " ";		
+		m=delbit(m,i);				
+
+	}
+	return o;
+};
+
+ValueCards extractValue(Cards i){
+	ValueCards vc;
+	ColorCards s(i,0);
+	ColorCards h(i,1);
+	ColorCards d(i,2);
+	ColorCards c(i,3);
+	MonoCards mc(i);
+
+	vc.setAsMax(s.calcValue());
+	vc.setAsMax(h.calcValue());
+	vc.setAsMax(d.calcValue());
+	vc.setAsMax(c.calcValue());
+	vc.setAsMax(mc.calcValue());
+	return vc;
+
+}
+
+int doAll7BoardVal()
+{
+	Cards c(-1);
+	cout << c << endl;
+	cout << "firstPerm" << " " << firstPerm(7) << endl;
+	cout << "lastPerm" << " " << firstPerm(7).lastPerm() << endl;
+
+	int sec=0;
+
+	BenchTime t;
+	t.start();
+	for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
+		ValueCards vc=extractValue(i);
+		if((sec&((1<<17)-1))  == 1)
+			//		if(vc.iscc() || vc.ispp() || vc.isTp())
+			//		if(vc.isQu() || vc.isSc() || vc.isCo())
+			//			if(vc.isSc())
+			//				if(vc.isQu())
+			//				if(vc.isFo())
+			//				if(vc.isFu())
+			//if(vc.isTp())
+			//			if(vc.ispp() || vc.iscc())
+			cout << i <<"--" << vc <<endl ; 
+
+		sec++;
+		//		if(sec >5000000) break;
+	}
+	t.stop();
+	cout << " il y  a " << sec << " combinaisons "<< endl;
+	cout << t << endl;
+	return 0;
+}
+void countAllComb(){
+	Cards c(-1);
+	cout << c << endl;
+	cout << "firstPerm" << " " << firstPerm(7) << endl;
+	cout << "lastPerm" << " " << firstPerm(7).lastPerm() << endl;
+
+	int sec=0;
+	long nbCard=0;
+	long nbSinglePair=0;
+	long nbDoublePair=0;
+
+	BenchTime t;
+	t.start();
+	for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
+		ValueCards vc=extractValue(i);
+			if(vc.iscc()) nbCard++;
+			if(vc.ispp()) nbSinglePair++;
+			if(vc.isTp()) nbDoublePair++;
+		sec++;
+	}
+	t.stop();
+	cout << " il y  a " << sec << " combinaisons "<< endl;
+	cout << t << endl;
+	cout << nbCard << " sans combinaison " << endl;
+	cout << nbSinglePair << " avec single pair" << endl;
+	cout << nbDoublePair << " avec double pair" << endl;
+
 	
-		}
-		ValueCards calcValue() const{
-			u64 nb=	__builtin_popcountll(m);
-			nb=normalizeSup(nb,4);	
-			ValueCards res;
-			u64 mx=(m<<1)|(1&(m>>12));
-			u64 n=mx&(mx>>1)&(mx<<1);
-			u64 n2=n&(n>>1)&(n<<1);	
-			u64 isQFlush=normalizeBool(n2);
-			res.setQuinteFlush(isQFlush);
-			u64 h=n2;
-			h=h|(h<<1)|(h>>1);
-			h=h|(h<<1)|(h>>1);
-			mx=h;
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
 
-			res.set1Desc((h^mx)>>1);	
+}
 
-			res.setAsMax(calcColor());
-			return res;
-		}	
-
-		friend ostream& operator<<(ostream& o, const ColorCards& c);
-	};
-
-	class MonoCards{
-		u64 m;
-		u64 extractcol(u64 dat,int coul){
-			u64 n=maskcolor&(dat>>coul);
-			return n;		
-		}
-		ValueCards hasQuinteValue(u64 atLeast1) const{
-			ValueCards res;
-			atLeast1=(atLeast1<<1)|(1&(atLeast1>>12));	
-			u64 mx=atLeast1;	
-			u64 n=mx&(mx>>1)&(mx<<1);
-			u64 n2=n&(n>>1)&(n<<1);	
-			u64 isQuinte=normalizeBool(n2);
-			u64 h=n2;
-			h=h|(h<<1)|(h>>1);
-			h=h|(h<<1)|(h>>1);
-			n2=h;
-			
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			res.set1Desc((n2^h)>>1);
-			res.setQuinte(isQuinte);
-
-			return res;
-		}
-		ValueCards hasFourValue(u64 h4,u64 h1) const{
-			ValueCards res;
-
-			res.setFour(normalizeBool(h4));
-			res.set4Desc(h4);
-			res.set1Desc(selectHbit(h1 & ~h4));
-			return res;
-		}
-		ValueCards hasFullValue(u64 h3,u64 h2) const {
-			ValueCards res;
-			res.setFull(normalizeBool(h3)&normalizeBool(h2));
-			res.set3Desc(h3);
-			res.set2Desc(h2);
-			return res;
-		}
-		ValueCards hasTwoPairValue(u64 h2,u64 h2bis,u64 h1) const{
-			ValueCards res;
-			res.set2Desc(h2|h2bis);
-			res.setTwoPairs(normalizeBool(h2)&normalizeBool(h2bis));
-			res.set1Desc(selectHbit(h1 & ~ (h2|h2bis)));
-			return res;
-		}	
-		ValueCards hasThreeValue(u64 h3,u64 h1) const{
-			ValueCards res;
-			res.setThree(normalizeBool(h3));
-			res.set3Desc(h3);
-			u64 h = h1 & ~h3;
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			
-			res.set1Desc(h1^h & ~h3);
-			return res;
-		}
-	
-		ValueCards hasOnePairValue(u64 h2,u64 h1) const{
-			ValueCards res;
-			res.setOnePair(normalizeBool(h2));
-			res.set2Desc(h2);
-			u64 h =h1 & ~h2;
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			res.set1Desc(h1 & ~h2 ^h);
-			return res;
-		}
-		public :
-
-		MonoCards(const Cards c){
-			u64 n=extractcol(c.m,0);
-			n+=extractcol(c.m,1);
-			n+=extractcol(c.m,2);
-			n+=extractcol(c.m,3);
-			m=n;
-		}
-		ValueCards calcValue() const{
-			ValueCards res;
-
-			u64 has4= (maskcolor)&(m>>2);
-			u64 has3= (maskcolor)&(m>>1) & (m)& ~has4;
-			u64 has2= (maskcolor)&(m>>1) & ~has3;
-			u64 has1= (maskcolor)&m&~has2&~has3&~has4;
-
-			has4=packOrdered4(has4);
-			has3=packOrdered4(has3);
-			has2=packOrdered4(has2);
-			has1=packOrdered4(has1);
-
-			u64 atLeast1=has4|has3|has2|has1;
-			u64 h4=selectHbit(has4);
-			has3= ( has3 | has4 ) & ~h4;
-			u64 h3=selectHbit(has3 );
-			has2=( has2 | has3 ) & ~h3;
-			u64 h2=selectHbit(has2 );
-			u64 h2bis=selectHbit(has2 & ~h2);
-
-			u64 h=atLeast1;
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			h ^=selectHbit(h);	
-			res.set1Desc(atLeast1^h);
-			res.setCard(1);
-
-			res.setAsMax(hasQuinteValue(atLeast1));
-			res.setAsMax(hasFourValue(h4,atLeast1));
-			res.setAsMax(hasFullValue(h3,h2));
-			res.setAsMax(hasTwoPairValue(h2,h2bis,atLeast1));
-			res.setAsMax(hasThreeValue(h3,atLeast1));
-			res.setAsMax(hasOnePairValue(h2,atLeast1));
-			return res;
-		}
-
-
-		friend ostream& operator<<(ostream& o, const MonoCards& c);
-	};
-
-	ostream& operator<<(ostream& o, const MonoCards& c){
-		u64 m = c.m;
-		for(int i=0;i<13;i++){
-			u64 v=(c.m>>(i<<2))&15;
-			if(v>0) o<< v <<'.'<< cardHighChar(i)<< ' ';
-		}
-		return o;
-	};
-
-
-
-	ostream& operator<<(ostream& o, const ColorCards& c){
-		u64 m = c.m;
-		while(m!=0){
-			u64 i=selectbit(m);
-			//o << cardString(i) << " ";		
-			int v= __builtin_ctzll(i);
-			o << cardHighChar(v) << " ";
-			m=delbit(m,i);				
-
-		}
-		return o;
-	};
-
-
-
-
-	ostream& operator<<(ostream& o, const Cards& c){
-		u64 m = c.m;
-		while(m!=0){
-			u64 i=selectbit(m);
-			o << cardString(i) << " ";		
-			m=delbit(m,i);				
-
-		}
-		return o;
-	};
-
-	ValueCards extractValue(Cards i){
-		ValueCards vc;
-		ColorCards s(i,0);
-		ColorCards h(i,1);
-		ColorCards d(i,2);
-		ColorCards c(i,3);
-		MonoCards mc(i);
-
-		vc.setAsMax(s.calcValue());
-		vc.setAsMax(h.calcValue());
-		vc.setAsMax(d.calcValue());
-		vc.setAsMax(c.calcValue());
-		vc.setAsMax(mc.calcValue());
-		return vc;
-
-	}
-
-	int main()
-	{
-		Cards c(-1);
-		cout << c << endl;
-		cout << "firstPerm" << " " << firstPerm(7) << endl;
-		cout << "lastPerm" << " " << firstPerm(7).lastPerm() << endl;
-
-		int sec=0;
-
-		BenchTime t;
-		t.start();
-		for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
-			ValueCards vc=extractValue(i);
-			if((sec&((1<<17)-1))  == 1)
-		//		if(vc.iscc() || vc.ispp() || vc.isTp())
-		//		if(vc.isQu() || vc.isSc() || vc.isCo())
-	//			if(vc.isSc())
-//				if(vc.isQu())
-//				if(vc.isFo())
-//				if(vc.isFu())
-				//if(vc.isTp())
-	//			if(vc.ispp() || vc.iscc())
-				cout << i <<"--" << vc <<endl ; 
-
-			sec++;
-	//		if(sec >5000000) break;
-		}
-		t.stop();
-		cout << " il y  a " << sec << " combinaisons "<< endl;
-		cout << t << endl;
-		return 0;
-	}
+int main(){
+	countAllComb();
+}

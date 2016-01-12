@@ -15,23 +15,33 @@ void initTab(){
 void calcWithKey(int nbleft, int etages,unsigned long long key){
 	if(nbleft >  etages*4+4) return ;
 	if(nbleft<0) return ;
+
 	if(etages==0){
-		// cout << numKey++ << " : " << key << endl; 
-		unsigned long long hash=key;
-		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
-		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
-		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
-		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
-		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
-		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
-		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
-		hash=hash & ((1<<szBit)-1);
-		tab[hash]++;
+		{
+			unsigned long long hash=key;
+			for(int k=0;k<13;k++){
+				hash|=(hash>>4);
+			}
+	//		if((hash&7)==1) return;
+		}	
+		{		// cout << numKey++ << " : " << key << endl; 
+			unsigned long long hash=key;
+			hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+			hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+			hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+			hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+			hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+			hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+			hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+			hash=hash & ((1<<szBit)-1);
+			tab[hash]++;
+		}
 	}
 	for(int i=0;i<5;i++){
-		calcWithKey(nbleft-i,etages-1,key|(i<<etages)); 
+		calcWithKey(nbleft-i,etages-1,key|(i<<(etages*4))); 
+
 	}
-	
+
 
 
 }
@@ -87,12 +97,14 @@ int main(){
 	r=r*13*13*13;
 	two2();
 	cout << r << endl;
-	cout << "total for 7 is  "<< endl << calc(7,13) << endl;
-	for(int i=5;i<20;i++){
+	//cout << "total for 7 is  "<< endl << calc(7,13) << endl;
+	int norm=17;
+	int tono=18;
+	for(int i=norm;i<tono;i++){
 		szBit=i;
 		cout << " pour " << szBit << endl;
 		initTab();
-		calcWithKey(7,12,0);
+		calcWithKey(7,11,0);
 		analyTab();
 	}
 	return 0;
