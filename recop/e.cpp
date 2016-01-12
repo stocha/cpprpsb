@@ -344,7 +344,7 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		ValueCards hasTwoPairValue(u64 h2,u64 h2bis,u64 h1) const{
 			ValueCards res;
 			res.set2Desc(h2|h2bis);
-			res.setTwoPairs(normalizeBool(h2|h2bis));
+			res.setTwoPairs(normalizeBool(h2)&normalizeBool(h2bis));
 			res.set1Desc(selectHbit(h1 & ~ (h2|h2bis)));
 			return res;
 		}	
@@ -368,7 +368,7 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			h ^=selectHbit(h);	
 			h ^=selectHbit(h);	
 			h ^=selectHbit(h);	
-			res.set1Desc(h1 ^h);
+			res.set1Desc(h1 & ~h2 ^h);
 			return res;
 		}
 		public :
@@ -413,7 +413,7 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			res.setAsMax(hasQuinteValue(atLeast1));
 			res.setAsMax(hasFourValue(h4,atLeast1));
 			res.setAsMax(hasFullValue(h3,h2));
-	//		res.setAsMax(hasTwoPairValue(h2,h2bis,atLeast1));
+			res.setAsMax(hasTwoPairValue(h2,h2bis,atLeast1));
 			res.setAsMax(hasThreeValue(h3,atLeast1));
 			res.setAsMax(hasOnePairValue(h2,atLeast1));
 			return res;
@@ -491,12 +491,13 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		t.start();
 		for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
 			ValueCards vc=extractValue(i);
-			if((sec&((1<<13)-1))  == 1)
-				if(vc.iscc())
+	//		if((sec&((1<<13)-1))  == 1)
+		//		if(vc.iscc() || vc.ispp() || vc.isTp())
+				if(vc.iscc() || vc.isQu() )
 				cout << i <<"--" << vc <<endl ; 
 
 			sec++;
-			if(sec >500000) break;
+			if(sec >5000000) break;
 		}
 		t.stop();
 		cout << " il y  a " << sec << " combinaisons "<< endl;
