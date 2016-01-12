@@ -316,7 +316,7 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			h ^=selectHbit(h);	
 			h ^=selectHbit(h);	
 
-			res.set1Desc(h^mx);	
+			res.set1Desc((h^mx)>>1);	
 
 			res.setAsMax(calcColor());
 			return res;
@@ -518,9 +518,11 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		t.start();
 		for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
 			ValueCards vc=extractValue(i);
-	//		if((sec&((1<<13)-1))  == 1)
+			if((sec&((1<<13)-1))  == 1)
 		//		if(vc.iscc() || vc.ispp() || vc.isTp())
-				if(vc.isQu() || vc.isSc() || vc.isCo())
+		//		if(vc.isQu() || vc.isSc() || vc.isCo())
+	//			if(vc.isSc())
+				if(vc.isQu())
 				cout << i <<"--" << vc <<endl ; 
 
 			sec++;
