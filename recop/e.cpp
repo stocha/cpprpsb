@@ -550,6 +550,12 @@ void countAllComb(){
 	long nbCard=0;
 	long nbSinglePair=0;
 	long nbDoublePair=0;
+	long nbBr=0;
+	long nbQu=0;
+	long nbCo=0;
+	long nbFu=0;
+	long nbFo=0;
+	long nbSc=0;
 
 	BenchTime t;
 	t.start();
@@ -558,6 +564,12 @@ void countAllComb(){
 			if(vc.iscc()) nbCard++;
 			if(vc.ispp()) nbSinglePair++;
 			if(vc.isTp()) nbDoublePair++;
+			if(vc.isBr()) nbBr++;
+			if(vc.isQu()) nbQu++;
+			if(vc.isCo()) nbCo++;
+			if(vc.isFu()) nbFu++;
+			if(vc.isFo()) nbFo++;
+			if(vc.isSc()) nbSc++;
 		sec++;
 	}
 	t.stop();
@@ -566,6 +578,12 @@ void countAllComb(){
 	cout << nbCard << " sans combinaison " << endl;
 	cout << nbSinglePair << " avec single pair" << endl;
 	cout << nbDoublePair << " avec double pair" << endl;
+	cout << nbBr << " avec brelan" << endl;
+	cout << nbQu<< " avec quinte " << endl;
+	cout << nbCo << " avec couleur " << endl;
+	cout << nbFu << " avec full" << endl;
+	cout << nbFo << " avec carre" << endl;
+	cout << nbSc << " avec suite couleur " << endl;
 
 	
 

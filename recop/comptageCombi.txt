@@ -2,10 +2,13 @@
 firstPerm 2s 2h 2d 2c 3s 3h 3d 
 lastPerm 2s 2h 2d 2c 3s 3h !s 
  il y  a 133784560 combinaisons 
-21.1554seconds 
+19.9917seconds 
 23294460 sans combinaison 
 58627800 avec single pair
 31433400 avec double pair
 6461620 avec brelan
 6180020 avec quinte 
 4047644 avec couleur 
+3473184 avec full
+224848 avec carre
+41584 avec suite couleur 
