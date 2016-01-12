@@ -49,6 +49,7 @@ inline u64 selectHbit(const u64 m){
 	u64 highB= 63- __builtin_clzll(m);
 	u64 highM= 1ULL<< highB;
 	return highM;
+
 }
 
 
@@ -205,8 +206,7 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			,"ERROR 1"
 
 	};	
-	for(int i=54;i<63;i++){
-		//for(int i=0;i<63;i++){
+	for(int i=62;i>53;--i){
 		int ind=62-i+1;	
 		u64 mask=(1ULL<<i);
 		//o << (v.m&mask); 
@@ -283,7 +283,7 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			nb=normalizeSup(nb,4);	
 			ValueCards res;
 			res.setColor(nb);	
-			u64 mx=(m<<1)|(m>>12);
+			u64 mx=(m<<1)|(1&(m>>12));
 			u64 n=mx&(mx>>1)&(mx<<1);
 			u64 n2=n&(n>>1)&(n<<1);	
 			u64 isQFlush=normalizeBool(n2);
@@ -299,9 +299,8 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 	class MonoCards{
 		u64 m;
 		u64 extractcol(u64 dat,int coul){
-			u64 mask=maskcolor<<coul;
-			u64 n=mask&dat;
-			return n>>coul;		
+			u64 n=maskcolor&(dat>>coul);
+			return n;		
 		}
 		public :
 
@@ -316,9 +315,9 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			ValueCards res;
 
 			u64 has4= (maskcolor)&(m>>2);
-			u64 has3= (maskcolor)&(m>>1) & (m);
-			u64 has2= (maskcolor)&(m>>1);
-			u64 has1= (maskcolor)&m;
+			u64 has3= (maskcolor)&(m>>1) & (m)& ~has4;
+			u64 has2= (maskcolor)&(m>>1) & ~has3;
+			u64 has1= (maskcolor)&m&~has2&~has3&~has4;
 
 			has4=packOrdered4(has4);
 			has3=packOrdered4(has3);
@@ -326,13 +325,13 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			has1=packOrdered4(has1);
 
 			u64 atLeast1=has4|has3|has2|has1;
-			atLeast1=(atLeast1<<1)|(atLeast1>>12);	
+			atLeast1=(atLeast1<<1)|(1&(atLeast1>>12));	
 			u64 mx=atLeast1;	
 			u64 n=mx&(mx>>1)&(mx<<1);
 			u64 n2=n&(n>>1)&(n<<1);	
 			u64 isQuinte=normalizeBool(n2);
 
-			if(isQuinte){
+			if(isQuinte!=0){
 				res.set1Desc(atLeast1>>1);
 				res.setQuinte(isQuinte);
 				return res;
@@ -348,8 +347,10 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			res.set2Desc(h2);
 			res.set1Desc(h1);
 
-			//has4=normalizeBool(has4);
-			//	res.setFour(has4);
+			res.setFour(normalizeBool(h4));
+			res.setThree(normalizeBool(h3));
+			res.setOnePair(normalizeBool(h2));
+			res.setCard(normalizeBool(h1));
 
 
 			return res;
@@ -434,11 +435,12 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			MonoCards mc(i);
 
 			ValueCards vc=extractValue(i);
-			if(sec%3000000 ==1 && !vc.isQu())
+			bool inhib=false;
+			//if(sec%3000000 ==1 && !inhib)
 				cout << i <<"--" << vc << " --- " << s << " / " << h << " / " << d << " / " << c << " --- " << mc << endl;
 
 			sec++;
-			if(sec >100000) break;
+			if(sec >500000) break;
 		}
 		t.stop();
 		cout << " il y  a " << sec << " combinaisons "<< endl;
