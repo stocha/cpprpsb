@@ -467,8 +467,8 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		t.start();
 		for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
 			ValueCards vc=extractValue(i);
-			if((sec>>10) & 1 == 1)
-				cout << i <<"--" << vc ; 
+			if((sec&((1<<17)-1))  == 1)
+				cout << i <<"--" << vc <<endl ; 
 
 			sec++;
 			//if(sec >500000) break;
