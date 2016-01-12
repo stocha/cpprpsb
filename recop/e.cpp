@@ -183,7 +183,7 @@ class ValueCards{
 };
 
 void outputHigh(ostream& o,const u64 v){
-	u64 m=v; //&((1ULL << 13)-1);
+	u64 m=v&((1ULL << 13)-1);
 
 	while(m!=0){
 		u64 b=selectbit(m);
@@ -529,11 +529,11 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 //				if(vc.isFo())
 //				if(vc.isFu())
 				//if(vc.isTp())
-				if(vc.ispp() || vc.iscc())
+	//			if(vc.ispp() || vc.iscc())
 				cout << i <<"--" << vc <<endl ; 
 
 			sec++;
-			if(sec >5000000) break;
+	//		if(sec >5000000) break;
 		}
 		t.stop();
 		cout << " il y  a " << sec << " combinaisons "<< endl;
