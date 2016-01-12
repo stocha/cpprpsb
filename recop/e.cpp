@@ -46,6 +46,7 @@ ostream& operator<<(ostream& o, const BenchTime& ts){
 	return o;
 }
 inline u64 selectHbit(const u64 m){
+	if(m==0) return 0;
 	u64 highB= 63- __builtin_clzll(m);
 	u64 highM= 1ULL<< highB;
 	return highM;
@@ -303,6 +304,19 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			u64 n=maskcolor&(dat>>coul);
 			return n;		
 		}
+		ValueCards hasQuinteValue(u64 atLeast1) const{
+			ValueCards res;
+			atLeast1=(atLeast1<<1)|(1&(atLeast1>>12));	
+			u64 mx=atLeast1;	
+			u64 n=mx&(mx>>1)&(mx<<1);
+			u64 n2=n&(n>>1)&(n<<1);	
+			u64 isQuinte=normalizeBool(n2);
+
+			res.set1Desc(atLeast1>>1);
+			res.setQuinte(isQuinte);
+
+			return res;
+		}
 		public :
 
 		MonoCards(const Cards c){
@@ -326,34 +340,26 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			has1=packOrdered4(has1);
 
 			u64 atLeast1=has4|has3|has2|has1;
-			atLeast1=(atLeast1<<1)|(1&(atLeast1>>12));	
-			u64 mx=atLeast1;	
-			u64 n=mx&(mx>>1)&(mx<<1);
-			u64 n2=n&(n>>1)&(n<<1);	
-			u64 isQuinte=normalizeBool(n2);
-
-			if(isQuinte!=0){
-				res.set1Desc(atLeast1>>1);
-				res.setQuinte(isQuinte);
-				return res;
-			}
-
 			u64 h4=selectHbit(has4);
 			u64 h3=selectHbit(has3);
-			u64 h2=selectHbit(has2);
-			u64 h1=selectHbit(has1);		
+			u64 h2=selectHbit(has2  |(has3^h3));
+			u64 h2bis=selectHbit(has2  ^h2);
+			u64 h1=(has1 | (has2 & ~h2 & ~h2bis));		
 
-			res.set4Desc(has4);
-			res.set3Desc(has3);
-			res.set2Desc(has2);
-			res.set1Desc(has1);
+			res.set4Desc(h4);
+			res.set3Desc(h3);
+			res.set2Desc(h2);
+			res.set1Desc(1);
 
 			res.setFour(normalizeBool(h4));
+			res.setFull(normalizeBool(h3)&normalizeBool(h2));
 			res.setThree(normalizeBool(h3));
+			res.setFull(normalizeBool(h2)&normalizeBool(h2bis));
 			res.setOnePair(normalizeBool(h2));
 			res.setCard(normalizeBool(h1));
 
-
+			ValueCards quV=hasQuinteValue(atLeast1);
+			res.setAsMax(quV);
 			return res;
 		}
 
