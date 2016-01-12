@@ -66,7 +66,7 @@ inline u64 delbit(const u64 m, const u64 bit){
 
 inline u64 packOrdered4(const u64 m){
 	u64 n=m&1ULL;
-	for(int i=0;i<12;i++){
+	for(int i=0;i<13;i++){
 
 		n=n|((m>>(3+3*i))&(1ULL<<(1+i)));
 	}
@@ -395,20 +395,25 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 
 			u64 atLeast1=has4|has3|has2|has1;
 			u64 h4=selectHbit(has4);
-			has3= has3 | has4 & ~h4;
+			has3= ( has3 | has4 ) & ~h4;
 			u64 h3=selectHbit(has3 );
-			has2= has2 | has3 & ~h3;
+			has2=( has2 | has3 ) & ~h3;
 			u64 h2=selectHbit(has2 );
 			u64 h2bis=selectHbit(has2 & ~h2);
 
-
-			res.set1Desc(atLeast1);
+			u64 h=atLeast1;
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			res.set1Desc(atLeast1^h);
 			res.setCard(1);
 
 			res.setAsMax(hasQuinteValue(atLeast1));
 			res.setAsMax(hasFourValue(h4,atLeast1));
 			res.setAsMax(hasFullValue(h3,h2));
-			res.setAsMax(hasTwoPairValue(h2,h2bis,atLeast1));
+	//		res.setAsMax(hasTwoPairValue(h2,h2bis,atLeast1));
 			res.setAsMax(hasThreeValue(h3,atLeast1));
 			res.setAsMax(hasOnePairValue(h2,atLeast1));
 			return res;
@@ -487,6 +492,7 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
 			ValueCards vc=extractValue(i);
 			if((sec&((1<<13)-1))  == 1)
+				if(vc.iscc())
 				cout << i <<"--" << vc <<endl ; 
 
 			sec++;
