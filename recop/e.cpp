@@ -301,7 +301,6 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			u64 nb=	__builtin_popcountll(m);
 			nb=normalizeSup(nb,4);	
 			ValueCards res;
-			res.setColor(nb);	
 			u64 mx=(m<<1)|(1&(m>>12));
 			u64 n=mx&(mx>>1)&(mx<<1);
 			u64 n2=n&(n>>1)&(n<<1);	
@@ -521,11 +520,11 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			ValueCards vc=extractValue(i);
 	//		if((sec&((1<<13)-1))  == 1)
 		//		if(vc.iscc() || vc.ispp() || vc.isTp())
-				if(vc.iscc() || vc.isQu() )
+				if(vc.isQu() || vc.isSc() || vc.isCo())
 				cout << i <<"--" << vc <<endl ; 
 
 			sec++;
-			if(sec >5000000) break;
+		//	if(sec >5000000) break;
 		}
 		t.stop();
 		cout << " il y  a " << sec << " combinaisons "<< endl;
