@@ -110,8 +110,8 @@ public:
 	void setAsMax(ValueCards v){
 		if(v.m>m) m=v.m;
 	}
-	void setQuinteFlush(){
-		const u64 mask=1ULL<<62;
+	void setQuinteFlush(u64 cond){
+		const u64 mask=cond<<62;
 		m|=mask;
 	}
 	void setFour(){
@@ -263,6 +263,10 @@ public :
 		nb=normalizeSup(nb,4);	
 		ValueCards res;
 		res.setColor(nb);	
+		u64 n=m&(m>>1)&(m<<1);
+	        u64 n2=n&(n2>>1)&(n2<<1);	
+		u64 isQFlush=normalizeBool(n2);
+		res.setQuinteFlush(isQFlush);
 		return res;
 	}	
 
@@ -329,12 +333,18 @@ ostream& operator<<(ostream& o, const Cards& c){
 };
 
 ValueCards extractValue(Cards i){
-	ValueCards c;
+	ValueCards vc;
 	ColorCards s(i,0);
 	ColorCards h(i,1);
 	ColorCards d(i,2);
 	ColorCards c(i,3);
 	MonoCards mc(i);
+	
+	vc.setAsMax(s.calcValue());
+	vc.setAsMax(h.calcValue());
+	vc.setAsMax(s.calcValue());
+	vc.setAsMax(s.calcValue());
+	return vc;
 	
 }
 
@@ -356,8 +366,10 @@ int main()
 			ColorCards d(i,2);
 			ColorCards c(i,3);
 			MonoCards mc(i);
+
+			ValueCards vc=extractValue(i);
 		if(sec%3000 ==0)
-			cout << i << " --- " << s << " / " << h << " / " << d << " / " << c << " --- " << mc << endl;
+			cout << i <<"--" << vc << " --- " << s << " / " << h << " / " << d << " / " << c << " --- " << mc << endl;
 
 		sec++;
 		//if(sec >100000) break;
