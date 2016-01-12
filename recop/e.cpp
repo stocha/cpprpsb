@@ -311,8 +311,17 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			u64 n=mx&(mx>>1)&(mx<<1);
 			u64 n2=n&(n>>1)&(n<<1);	
 			u64 isQuinte=normalizeBool(n2);
-
-			res.set1Desc(atLeast1>>1);
+			u64 h=n2;
+			h=h|(h<<1)|(h>>1);
+			h=h|(h<<1)|(h>>1);
+			n2=h;
+			
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			res.set1Desc((n2^h)>>1);
 			res.setQuinte(isQuinte);
 
 			return res;
@@ -343,7 +352,11 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			ValueCards res;
 			res.setThree(normalizeBool(h3));
 			res.set3Desc(h3);
-			res.set1Desc(h1 & ~h3);
+			u64 h = h1 & ~h3;
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			
+			res.set1Desc(h1^h & ~h3);
 			return res;
 		}
 	
@@ -351,7 +364,11 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			ValueCards res;
 			res.setOnePair(normalizeBool(h2));
 			res.set2Desc(h2);
-			res.set1Desc(h1 & ~h2);
+			u64 h =h1 & ~h2;
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			h ^=selectHbit(h);	
+			res.set1Desc(h1 ^h);
 			return res;
 		}
 		public :
@@ -378,9 +395,11 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 
 			u64 atLeast1=has4|has3|has2|has1;
 			u64 h4=selectHbit(has4);
-			u64 h3=selectHbit(has3 | (has4^h4));
-			u64 h2=selectHbit(has2  |(has3^h3));
-			u64 h2bis=selectHbit(has2  ^h2 |(has3^h3));
+			has3= has3 | has4 & ~h4;
+			u64 h3=selectHbit(has3 );
+			has2= has2 | has3 & ~h3;
+			u64 h2=selectHbit(has2 );
+			u64 h2bis=selectHbit(has2 & ~h2);
 
 
 			res.set1Desc(atLeast1);
@@ -467,11 +486,11 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		t.start();
 		for(Cards i=firstPerm(7);i<firstPerm(7).lastPerm();i=i.nextPerm()){
 			ValueCards vc=extractValue(i);
-			if((sec&((1<<17)-1))  == 1)
+			if((sec&((1<<13)-1))  == 1)
 				cout << i <<"--" << vc <<endl ; 
 
 			sec++;
-			//if(sec >500000) break;
+			if(sec >500000) break;
 		}
 		t.stop();
 		cout << " il y  a " << sec << " combinaisons "<< endl;
