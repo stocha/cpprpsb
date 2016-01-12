@@ -180,7 +180,7 @@ class ValueCards{
 };
 
 void outputHigh(ostream& o,const u64 v){
-	u64 m=v&((1ULL << 14)-1);
+	u64 m=v&((1ULL << 13)-1);
 
 	while(m!=0){
 		u64 b=selectbit(m);
@@ -215,6 +215,7 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 		}
 
 	}
+	o << '|' ;
 	for(int i=3;i>=0;--i){
 		outputHigh(o,v.m>>(i*13));
 		o << '|';
@@ -261,7 +262,7 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 	}
 
 
-	const u64 maskcolor=((0ULL -1 )/15);
+	const u64 maskcolor=0x1111111111111111ULL;
 
 	class ColorCards{
 		u64 m;
@@ -342,10 +343,10 @@ ostream& operator<<(ostream& o,const ValueCards& v){
 			u64 h2=selectHbit(has2);
 			u64 h1=selectHbit(has1);		
 
-			res.set4Desc(h4);
-			res.set3Desc(h3);
-			res.set2Desc(h2);
-			res.set1Desc(h1);
+			res.set4Desc(has4);
+			res.set3Desc(has3);
+			res.set2Desc(has2);
+			res.set1Desc(has1);
 
 			res.setFour(normalizeBool(h4));
 			res.setThree(normalizeBool(h3));
