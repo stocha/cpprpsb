@@ -1,17 +1,56 @@
 #include <iostream>
 using namespace std;
+int szBit=9;
 unsigned long numKey=0;
+unsigned long long tab[1 << 24];
+
+
+
+
+void initTab(){
+	for(int i=0;i<(1<<szBit);i++){
+		tab[i]=0;
+	}
+}
 void calcWithKey(int nbleft, int etages,unsigned long long key){
 	if(nbleft >  etages*4+4) return ;
 	if(nbleft<0) return ;
 	if(etages==0){
-	if(key > 10000)	
-		cout << numKey++ << " : " << key << endl; 
+		// cout << numKey++ << " : " << key << endl; 
+		unsigned long long hash=key;
+		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+		hash=hash & ((1<<szBit)-1);
+		tab[hash]++;
 	}
 	for(int i=0;i<5;i++){
 		calcWithKey(nbleft-i,etages-1,key|(i<<etages)); 
 	}
 	
+
+
+}
+void analyTab(){
+	int max=1<<szBit;
+
+	int sum=0;
+	for(int i=0;i<max;i++) sum+=tab[i];
+
+	int countColi=0;
+	int maxColi=0;
+
+	for(int i=0;i<max;i++){
+		if(tab[i]>1) countColi++;
+		if(tab[i]>maxColi) maxColi=tab[i];
+	}
+	cout << " total key " << sum << endl;
+	cout << " countColi " << countColi << endl;
+	cout << " maxColi " << maxColi << endl;
 
 
 }
@@ -49,6 +88,12 @@ int main(){
 	two2();
 	cout << r << endl;
 	cout << "total for 7 is  "<< endl << calc(7,13) << endl;
-	calcWithKey(7,12,0);
+	for(int i=5;i<20;i++){
+		szBit=i;
+		cout << " pour " << szBit << endl;
+		initTab();
+		calcWithKey(7,12,0);
+		analyTab();
+	}
 	return 0;
 }
