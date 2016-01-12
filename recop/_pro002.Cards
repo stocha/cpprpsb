@@ -10,7 +10,17 @@ using u64 = unsigned long long;
 // Cards : container cartes
 // MonoCards : sans couleurs raw
 // ColorCards : sans cardinality same color
+// ValueCards : combinaisons
  
+inline u64 normalizeBool(u64 i){
+	if(i!=0) return 1;
+	return 0;
+}
+inline u64 normalizeSup(u64 a, u64 b){
+	if(a>b) return 1;
+	else return 0;
+}
+
 class BenchTime{
 	clock_t dstart;
 	clock_t dstop;
@@ -28,7 +38,8 @@ public:
 	}
 
 friend ostream& operator<<(ostream& o, const BenchTime& t);
-}; 
+};// fin BenchTime 
+
 ostream& operator<<(ostream& o, const BenchTime& ts){
 	double t=ts.tsec(); 
 	o<< t << "seconds ";
@@ -93,6 +104,108 @@ string cardString(const u64 b){
 	if(v>13) return "??";
 	return res.str();
 }
+class ValueCards{
+	u64 m=0;
+public:
+	bool hasValue(){ return ((-1ULL<<53)&m)!=0 ;}
+	void setAsMax(ValueCards v){
+		if(v.m>m) m=v.m;
+	}
+	void setQuinteFlush(u64 cond){
+		const u64 mask=cond<<62;
+		m|=mask;
+	}
+	void setFour(){
+		const u64 mask=1ULL<<61;
+		m|=mask;
+	}
+	void setFull(){
+		const u64 mask=1ULL<<60;
+		m|=mask;
+	}
+	void setColor(u64 cond){
+		const u64 mask=cond<<59;
+		m|=mask;
+	}
+	void setQuinte(){
+		const u64 mask=1ULL<<58;
+		m|=mask;
+	}
+	void setThree(){
+		const u64 mask=1ULL<<57;
+		m|=mask;
+	}
+	void setTwoPairs(){
+		const u64 mask=1ULL<<56;
+		m|=mask;
+	}
+	void setOnePair(){
+		const u64 mask=1ULL<<55;
+		m|=mask;
+	}
+	void setCard(){
+		const u64 mask=1ULL<<54;
+		m|=mask;
+	}
+	void set4Desc(u64 d){
+		m|=d<<(13*3);
+	}
+	void set3Desc(u64 d){
+		m|=d<<(13*2);
+	}
+	void set2Desc(u64 d){
+		m|=d<<(13*1);
+	}
+	void set1Desc(u64 d){
+		m|=d;
+	}
+
+friend ostream& operator<<(ostream& o,const ValueCards& v);	
+};
+
+void outputHigh(ostream& o,const u64 v){
+	u64 m=v&((1ULL << 14)-1);
+
+	while(m!=0){
+		u64 b=selectbit(m);
+		m^= b;
+		int hv=__builtin_ctzll(b); 
+		
+		o<< cardHighChar(hv) << " ";
+	}
+}	
+ostream& operator<<(ostream& o,const ValueCards& v){
+	string disp[]={ ""
+		,"SC" // index 1
+		,"4 "
+		,"32"
+		,"Co"
+		,"S "
+		,"3 "
+		,"22"
+		,"2 "
+		,"1 "
+		,"ERROR 0"
+		,"ERROR 1"
+		
+	};	
+	for(int i=54;i<63;i++){
+	//for(int i=0;i<63;i++){
+		int ind=62-i+1;	
+		u64 mask=(1ULL<<i);
+		//o << (v.m&mask); 
+		if((v.m&mask) !=0){
+			o << disp[ind] << " ";
+		}
+	
+	}
+	for(int i=3;i>=0;--i){
+		outputHigh(o,v.m>>(i*13));
+		o << '|';
+	}	
+	
+	return o;
+}
 
 class Cards{
 	u64 m;
@@ -145,6 +258,23 @@ public :
 
 	}
 	
+	ColorCards(const u64 v){
+		m=v;
+	}
+	
+	ValueCards calcValue() const{
+		u64 nb=	__builtin_popcountll(m);
+		nb=normalizeSup(nb,4);	
+		ValueCards res;
+		res.setColor(nb);	
+		u64 n=m&(m>>1)&(m<<1);
+	        u64 n2=n&(n>>1)&(n<<1);	
+		u64 isQFlush=normalizeBool(n2);
+		res.setQuinteFlush(isQFlush);
+		res.set1Desc(m);	
+		
+		return res;
+	}	
 
 friend ostream& operator<<(ostream& o, const ColorCards& c);
 };
@@ -208,6 +338,22 @@ ostream& operator<<(ostream& o, const Cards& c){
 	return o;
 };
 
+ValueCards extractValue(Cards i){
+	ValueCards vc;
+	ColorCards s(i,0);
+	ColorCards h(i,1);
+	ColorCards d(i,2);
+	ColorCards c(i,3);
+	MonoCards mc(i);
+	
+	vc.setAsMax(s.calcValue());
+	vc.setAsMax(h.calcValue());
+	vc.setAsMax(s.calcValue());
+	vc.setAsMax(s.calcValue());
+	return vc;
+	
+}
+
 int main()
 {
 	Cards c(-1);
@@ -226,8 +372,10 @@ int main()
 			ColorCards d(i,2);
 			ColorCards c(i,3);
 			MonoCards mc(i);
-		if(sec%3000 ==0)
-			cout << i << " --- " << s << " / " << h << " / " << d << " / " << c << " --- " << mc << endl;
+
+			ValueCards vc=extractValue(i);
+		if(sec%3000 ==0 || vc.hasValue())
+			cout << i <<"--" << vc << " --- " << s << " / " << h << " / " << d << " / " << c << " --- " << mc << endl;
 
 		sec++;
 		if(sec >100000) break;
