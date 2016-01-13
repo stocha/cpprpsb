@@ -114,9 +114,19 @@ char cardColorChar(const int c){
 }
 
 void test00(){
-	u64 m =((u64)-1ULL) / ( at(8)-1);
+	u64 m =(-1ULL) / ( at(8)-1);
 	Bt v(m);
 	cout << v << endl;
+	BenchTime bench;
+	long count=0;
+	bench.start();
+	for(u64 co=at(7)-1;co<at(52);co=nextperm(co)){
+		count++;
+	}
+	bench.stop();
+	cout << " il y a " << count << " combinaisons " << endl;
+	double nbPerSec=count/bench.tsec();
+	cout << bench << " nous fait " << nbPerSec << endl;	
 }
 
 int main(){
