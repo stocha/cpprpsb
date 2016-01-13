@@ -59,6 +59,11 @@ inline u64 nextperm(u64 m){
 	return w;
 }
 
+// asm_fun
+inline u64 at(const int i){
+	return 1ULL << i;
+}
+
 
 // debug_fun
 char cardHighChar(const int v){
