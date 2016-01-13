@@ -63,6 +63,11 @@ inline u64 at(const int i){
 	return 1ULL << i;
 }
 
+
+// debug_fun
+void debu64Bits(u64 par, ostream& o){
+}
+
 //Affichage sous forme de bits
 class Bt{
 private :
@@ -80,7 +85,7 @@ ostream& operator<< (ostream& o, Bt& v){
 		o<< ((m>>i)&1);
 		if(i%8==7) o << " ";
 	}
-	
+	return o;	
 }
 // debug_fun
 char cardHighChar(const int v){
