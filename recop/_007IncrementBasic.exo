@@ -1,25 +1,130 @@
 #include <iostream>
 using namespace std;
+int szBit=9;
+unsigned long numKey=0;
+unsigned long long tab[1 << 24];
 
-using u64 = unsigned long long;
 
-u64 nextperm(u64 m){
-	u64 v=m; // current permutation of bits 
-	u64 w; // next permutation of bits
 
-	u64 t = v | (v - 1); // t gets v's least significant 0 bits set to 1
-	// Next set to 1 the most significant bit to change, 
-	// set to 0 the least significant ones, and add the necessary 1 bits.
-	w = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctzll(v) + 1)); 	
-	return w;
+
+void initTab(){
+	for(int i=0;i<(1<<szBit);i++){
+		tab[i]=0;
+	}
+}
+void calcWithKey(int nbleft, int etages,unsigned long long key){
+	if(nbleft >  etages*4+4) return ;
+	if(nbleft<0) return ;
+
+	if(etages==0){
+		{
+			unsigned long long hash=key;
+			for(int k=0;k<13;k++){
+				hash|=(hash>>4);
+			}
+	//		if((hash&7)==1) return;
+		}	
+		{		// cout << numKey++ << " : " << key << endl; 
+			unsigned long long hash=key;
+			hash=hash&((1<<szBit)-1);
+	//		hash=hash ^ (hash>>szBit) | (hash<<64-szBit);
+	//		hash=hash & ((1<<szBit)-1);
+			tab[hash]++;
+		}
+		return;
+	}
+	for(int i=0;i<5;i++){
+		calcWithKey(nbleft-i,etages-1,key|(i<<(etages*4))); 
+
+	}
+
+
+
+}
+void displayTab(){
+	for(int i=0;i<(1<<szBit);i++){
+		if(tab[i]!=0)
+		cout << i << "<>" << tab[i] << endl;
+	}
+}
+void analyTab(){
+	int max=1<<szBit;
+
+	int sum=0;
+	for(int i=0;i<max;i++) sum+=tab[i];
+
+	int countColi=0;
+	int maxColi=0;
+	int nb0=0;
+	int nb1=0;
+
+	int nbCons=0;
+	int maxCons=0;
+
+	for(int i=0;i<max;i++){
+		if(tab[i]>1) countColi++;
+		if(tab[i]==0) nb0++;
+		if(tab[i]==1) nb1++;
+		if(tab[i]>maxColi) maxColi=tab[i];
+		if(tab[i]==0){
+			nbCons++;
+		}else{
+			nbCons=0;
+		}
+		if(maxCons<nbCons) maxCons=nbCons;
+	}
+	displayTab();
+	cout << " total key " << sum << endl;
+	cout << " countColi " << countColi << endl;
+	cout << " maxColi " << maxColi << endl;
+	cout << " nb 0 " << nb0 << endl;
+	cout << " nb 1 " << nb1 << endl;
+
+	cout << " nb max cons 0 " << maxCons << endl;
+
+}
+int calc(int nbleft,int etages){
+	if(nbleft >  etages*4) return 0;
+	if(nbleft==0) return 1;
+	if(nbleft<0) return 0;
+	if(etages==1) return 1;
+	int res=0;
+	for(int i=0;i<5;i++){
+		int leftare=calc(nbleft-i,etages-1); 
+
+		if(etages>=1){
+			if(leftare>1024){
+				for(int k=0;k<13-etages;k++) cout << "  ";
+				cout << "etage " << etages << " left " << nbleft << " pour " << i << " y a " << leftare << endl;
+			}		
+
+		}
+		res+=leftare;
+	}
+	return res;
+}
+
+void two2(){
+	for(int i=0;i<26;i++){
+		cout << (1<<i) << endl;
+	}
 }
 
 int main(){
-	u64 countComb=0;
-	for(u64 i=(1ULL<<7)-1;i<((1ULL<<52));i=nextperm(i)){
-		countComb++;
 
-		}
-	cout << "nbcomb " << countComb << endl;
-return 0;
+	int r=13*13*13*13;
+	r=r*13*13*13;
+	two2();
+	cout << r << endl;
+	//cout << "total for 7 is  "<< endl << calc(7,13) << endl;
+	int norm=16;
+	int tono=norm+1;
+	for(int i=norm;i<tono;i++){
+		szBit=i;
+		cout << " pour " << szBit << endl;
+		initTab();
+		calcWithKey(7,12,0);
+		analyTab();
+	}
+	return 0;
 }
