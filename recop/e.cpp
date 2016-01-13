@@ -1,11 +1,10 @@
-##include <iostream>
+#include <iostream>
 #include <sstream>
 #include <ctime>
 using namespace std;
-using u64 = unsigned long long;
+using u64 = unsigned long long int;
 using u16 = unsigned short;
 
-include <iostream>
 
 class BenchTime{
 	clock_t dstart;
@@ -48,7 +47,7 @@ inline u64 selectbit(const u64 m){
 }
 
 // asm_fun
-inline u64 nextperm(u64 m){
+inline u64 nextperm(const u64 m){
 	u64 v=m; // current permutation of bits 
 	u64 w; // next permutation of bits
 
@@ -64,7 +63,25 @@ inline u64 at(const int i){
 	return 1ULL << i;
 }
 
+//Affichage sous forme de bits
+class Bt{
+private :
+	u64 m;
+public :
+	Bt(u64 m) : m(m){};
+friend ostream& operator<< (ostream& o, Bt& v);
+};
+// Bt<<
+ostream& operator<< (ostream& o, Bt& v){
+	u64 m=v.m;
 
+	for(int i=0;i<sizeof(u64)*8;i++)
+	{
+		o<< ((m>>i)&1);
+		if(i%8==7) o << " ";
+	}
+	
+}
 // debug_fun
 char cardHighChar(const int v){
 	char sv='2'+v;
@@ -87,8 +104,13 @@ char cardColorChar(const int c){
 	if(c==2) sc='d';
 	if(c==3) sc='c';
 
-	if(v>3) return '?';
+	if(c>3) return '?';
 	return sc; 
+}
+
+void test00(){
+	Bt v(-1ULL / ( at(13)-1));
+	cout << v << endl;
 }
 
 int main(){
