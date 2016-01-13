@@ -4,7 +4,7 @@
 using namespace std;
 using u64 = unsigned long long int;
 using u16 = unsigned short;
-
+const int u64_sz = sizeof(u64)*8;
 
 class BenchTime{
 	clock_t dstart;
@@ -65,7 +65,13 @@ inline u64 at(const int i){
 
 
 // debug_fun
-void debu64Bits(u64 par, ostream& o){
+void debug64(u64 par, ostream& o, bool (*f)(int)){
+	for(int i=0;i<sizeof(u64)*8;i++)
+	{
+		o<< ((par>>(u64_sz-1-i))&1);
+		if(f(i)) o << " ";
+	}
+
 }
 
 //Affichage sous forme de bits
@@ -78,13 +84,7 @@ friend ostream& operator<< (ostream& o, Bt& v);
 };
 // Bt<<
 ostream& operator<< (ostream& o, Bt& v){
-	u64 m=v.m;
-
-	for(int i=0;i<sizeof(u64)*8;i++)
-	{
-		o<< ((m>>i)&1);
-		if(i%8==7) o << " ";
-	}
+	debug64(v.m,o,[](int i){ return i%8==7;});
 	return o;	
 }
 // debug_fun
@@ -114,7 +114,8 @@ char cardColorChar(const int c){
 }
 
 void test00(){
-	Bt v(-1ULL / ( at(13)-1));
+	u64 m =((u64)-1ULL) / ( at(8)-1);
+	Bt v(m);
 	cout << v << endl;
 }
 
