@@ -87,6 +87,18 @@ ostream& operator<< (ostream& o, Bt& v){
 	debug64(v.m,o,[](int i){ return i%8==7;});
 	return o;	
 }
+// Affichage des valeurs
+namespace Values{
+	const u64 qf=at(62);
+	const u64 sq=at(61); 
+	const u64 fu=at(60);
+	const u64 co=at(59);
+	const u64 qu=at(58);
+	const u64 tr=at(57);
+	const u64 tp=at(56);
+	const u64 op=at(55);
+	const u64 sc=at(54); 
+}
 // debug_fun
 char cardHighChar(const int v){
 	char sv='2'+v;
