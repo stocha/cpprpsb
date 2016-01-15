@@ -1,147 +1,117 @@
-#include <iostream>
-#include <sstream>
-#include <ctime>
-using namespace std;
-using u64 = unsigned long long int;
-using u16 = unsigned short;
-const int u64_sz = sizeof(u64)*8;
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <linux/fb.h>
+#include <sys/mman.h>
+#include <sys/ioctl.h>
+// application entry point
+class calcSimple{
+	
 
-class BenchTime{
-	clock_t dstart;
-	clock_t dstop;
-	public:
-	void start(){
-		dstart=clock();
-	}
-	void stop(){
-		dstop=clock();
-	};
-	const double tsec() const{
-
-		double t= (dstop-dstart)/(double)CLOCKS_PER_SEC;
-		return t;
-	}
-
-	friend ostream& operator<<(ostream& o, const BenchTime& t);
-};// fin BenchTime 
-// BenchTime<<
-ostream& operator<<(ostream& o, const BenchTime& ts){
-	double t=ts.tsec(); 
-	o<< t << "seconds ";
-	return o;
-}
-// asm_fun
-inline u64 selectHbit(const u64 m){
-	if(m==0) return 0;
-	u64 highB= 63- __builtin_clzll(m);
-	u64 highM= 1ULL<< highB;
-	return highM;
-
-}
-
-// asm_fun
-inline u64 selectbit(const u64 m){
-	u64 i=m-1;
-	i=~i&m;
-	return i;	
-}
-
-// asm_fun
-inline u64 nextperm(const u64 m){
-	u64 v=m; // current permutation of bits 
-	u64 w; // next permutation of bits
-
-	u64 t = v | (v - 1); // t gets v's least significant 0 bits set to 1
-	// Next set to 1 the most significant bit to change, 
-	// set to 0 the least significant ones, and add the necessary 1 bits.
-	w = (t + 1) | (((~t & -~t) - 1) >> (__builtin_ctzll(v) + 1)); 	
-	return w;
-}
-
-// asm_fun
-inline u64 at(const int i){
-	return 1ULL << i;
-}
-
-
-// debug_fun
-void debug64(u64 par, ostream& o, bool (*f)(int)){
-	for(int i=0;i<sizeof(u64)*8;i++)
-	{
-		o<< ((par>>(u64_sz-1-i))&1);
-		if(f(i)) o << " ";
-	}
-
-}
-
-//Affichage sous forme de bits
-class Bt{
-private :
-	u64 m;
-public :
-	Bt(u64 m) : m(m){};
-friend ostream& operator<< (ostream& o, Bt& v);
 };
-// Bt<<
-ostream& operator<< (ostream& o, Bt& v){
-	debug64(v.m,o,[](int i){ return i%8==7;});
-	return o;	
+// pixel_asm
+unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
+	
+	r=r&255;
+	g=g&255;
+	b=b&255;
+	//unsigned int rs=(r<<0);
+	unsigned int rs=(r<<16)|(g<<8)|b;
+	//unsigned int rs=(b<<8);
+	//unsigned int rs=  -1;
+	return rs;
 }
-// Affichage des valeurs
-namespace Values{
-	const u64 qf=at(62);
-	const u64 sq=at(61); 
-	const u64 fu=at(60);
-	const u64 co=at(59);
-	const u64 qu=at(58);
-	const u64 tr=at(57);
-	const u64 tp=at(56);
-	const u64 op=at(55);
-	const u64 sc=at(54); 
-}
-// debug_fun
-char cardHighChar(const int v){
-	char sv='2'+v;
-	if(v==8) sv='T';
-	if(v==9) sv='J';
-	if(v==10) sv='Q';
-	if(v==11) sv='K';
-	if(v==12) sv='A';
-	if(v==13) sv='!';
-	if(v>13) sv='?';
-	return sv;
-}
-// debug_fun
-char cardColorChar(const int c){
-	ostringstream res;
+int main(int argc, char* argv[])
+{
+  int fbfd = 0;
+  struct fb_var_screeninfo orig_vinfo;
+  struct fb_var_screeninfo vinfo;
+  struct fb_fix_screeninfo finfo;
+  long int screensize = 0;
+  char *fbp = 0;
 
-	char sc='E';
-	if(c==0) sc='s';
-	if(c==1) sc='h';
-	if(c==2) sc='d';
-	if(c==3) sc='c';
 
-	if(c>3) return '?';
-	return sc; 
-}
+  // Open the file for reading and writing
+  fbfd = open("/dev/fb0", O_RDWR);
+  if (!fbfd) {
+    printf("Error: cannot open framebuffer device.\n");
+    return(1);
+  }
+  printf("The framebuffer device was opened successfully.\n");
 
-void test00(){
-	u64 m =(-1ULL) / ( at(8)-1);
-	Bt v(m);
-	cout << v << endl;
-	BenchTime bench;
-	long count=0;
-	bench.start();
-	for(u64 co=at(7)-1;co<at(52);co=nextperm(co)){
-		count++;
-	}
-	bench.stop();
-	cout << " il y a " << count << " combinaisons " << endl;
-	double nbPerSec=count/bench.tsec();
-	cout << bench << " nous fait " << nbPerSec << endl;	
-}
+  // Get variable screen information
+  if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo)) {
+    printf("Error reading variable information.\n");
+  }
+  printf("Original %dx%d, %dbpp\n", vinfo.xres, vinfo.yres, 
+         vinfo.bits_per_pixel );
 
-int main(){
-	test00();
-	return 0;
+  // Store for reset (copy vinfo to vinfo_orig)
+  memcpy(&orig_vinfo, &vinfo, sizeof(struct fb_var_screeninfo));
+
+  // Change variable info
+  vinfo.bits_per_pixel = 32;
+ // vinfo.grayscale=1;
+           // vinfo.red.offset    = 0;
+            // vinfo.red.length    = 8;
+ //            vinfo.green.offset  = 8;
+ //            vinfo.green.length  = 8;
+    //         vinfo.blue.offset   = 16;
+ //            vinfo.blue.length   = 8;
+ //            vinfo.transp.offset = 0;
+ //            vinfo.transp.length = 0;
+  if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &vinfo)) {
+    printf("Error setting variable information.\n");
+  }
+  
+  // Get fixed screen information
+  if (ioctl(fbfd, FBIOGET_FSCREENINFO, &finfo)) {
+    printf("Error reading fixed information.\n");
+  }
+
+  // map fb to user mem 
+  screensize = finfo.smem_len;
+  fbp = (char*)mmap(0, 
+                    screensize, 
+                    PROT_READ | PROT_WRITE, 
+                    MAP_SHARED, 
+                    fbfd, 
+                    0);
+
+  if ((int)fbp == -1) {
+    printf("Failed to mmap.\n");
+  }
+  else {
+    // draw...
+    int x, y;
+    unsigned int pix_offset;
+
+    for (y = 0; y < (vinfo.yres / 2); y++) {
+      for (x = 0; x < vinfo.xres; x++) {
+
+        // calculate the pixel's byte offset inside the buffer
+        // see the image above in the blog...
+        pix_offset = x * 4+ y * finfo.line_length ;
+
+        // now this is about the same as fbp[pix_offset] = value
+	unsigned int gray=x *255 /  vinfo.xres;
+        *((int*)(fbp + pix_offset)) =pix(gray,gray,gray); 
+
+      }
+    }
+
+    sleep(1);
+  }
+
+  // cleanup
+  munmap(fbp, screensize);
+  if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &orig_vinfo)) {
+    printf("Error re-setting variable information.\n");
+  }
+  close(fbfd);
+
+  return 0;
+  
 }
