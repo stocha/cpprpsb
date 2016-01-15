@@ -73,6 +73,7 @@ unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
 	//unsigned int rs=  -1;
 	return rs;
 }
+unsigned int min (unsigned int a, unsigned int b){ if(a<b) return a; else return b;}
 int main(int argc, char* argv[])
 {
   int fbfd = 0;
@@ -151,16 +152,19 @@ int main(int argc, char* argv[])
         pix_offset = x * 4+ y * finfo.line_length ;
 
         // now this is about the same as fbp[pix_offset] = value
-	auto rv=cs.get(x,y);
-	int v=0;	
+	unsigned long long rv=cs.get(x,y);
+	unsigned int v=0;	
 
-	//if(rv<255) v=rv>>8;
-	v=rv>>3;
+	if(rv<255) v=pix(rv,0,0);
+	else if(rv<255*3) v= pix(255,(rv-255 )/2,0);	
+	else if(rv<255*7) v= pix(255,255,(rv-255*3)/4);	
+	//else if(rv<255*3) v= pix(rv-255*3,rv-255,rv-255*2);	
+	else if(rv>=255*7) v= pix(255,255,255);
+	
 //	if(v>0) cout << v << " " << x << " " << y << endl;
 	unsigned int gray=v ;
-	if(v>255 ) gray=255;
-	//gray=255;
-        *((int*)(fbp + pix_offset)) =pix(gray,gray,gray); 
+	//if(v>255 ) gray=255;
+        *((int*)(fbp + pix_offset)) =v;
 
       }
     }
