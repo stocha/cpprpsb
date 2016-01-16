@@ -9,10 +9,12 @@
 #include <vector>
 #include <iostream>
 using namespace std;
-//const int nbRay=4096*64;
-const int nbRay=120;
-const int dist=360;
+//const int nbRay=4096*64*2;
+const int nbRay=120*4*5*3;
+const int dist=360*2*4*10;
 const bool loop=true;
+const int starDissip=5;
+const int nbRayPerImage=250*8*5*2*5;
 // application entry point
 class ray{
 	private :
@@ -20,13 +22,15 @@ class ray{
 		int vy=0;
 		int toLive=0;
 		const int sz=0;
+		int vintens=1;
 	public :
 		ray(int sz) : sz(sz){};
-		void reset(int startx,int starty,int startLive){
-			vx=startx;vy=starty;toLive=startLive;
+		void reset(int startx,int starty,int startLive,int startIntens){
+			vx=startx;vy=starty;toLive=startLive;vintens=startIntens;
 		}	
 		int x(){return vx;};
 		int y(){return vy;};
+		int intens() {return vintens;}
 		void doit(){
 			int sx=-1;
 			int sy=-1;
@@ -49,6 +53,7 @@ class calcSimple{
 	private :
 		const int sz;
 		int nbRayAlive=0;
+		int currRay=0;
 	public :
 		vector<unsigned long long> dat;
 		vector<ray> rays;
@@ -62,7 +67,7 @@ class calcSimple{
 		void decStar(){
 			for(int i=0;i<sz*sz;i++){
 				if(dat[i]>0)
-					--dat[i];
+					dat[i]=dat[i]*1000/1001;
 			}
 		}
 
@@ -73,19 +78,23 @@ class calcSimple{
 		void doit(){
 			if(nbRayAlive<nbRay){ 
 				ray r(sz); 
-				r.reset(sz/2,sz/2,dist);				
+				r.reset(sz/2,sz/2,dist,1);				
 				rays.push_back(r);
 
+				++nbRayAlive;
 			}	
-			for(ray& r : rays){
+			++currRay;
+			if(currRay>=nbRayAlive){currRay=0;};
+			ray& r=rays[currRay];
 				if(r.dead()){
-					r.reset(sz/2,sz/2,dist);
-					decStar();
-				}
+					r.reset(sz/2,sz/2,dist,1);
+					}
 				++dat[r.x()+r.y()*sz];
 				r.doit();
+				if(rand()%1000000 <starDissip)
+						decStar();
 
-			}
+
 		}	
 		void mdo(int nb){
 			for(int i=0;i<nb;++i){
@@ -112,15 +121,14 @@ unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
 	//unsigned int rs=  -1;
 	return rs;
 }
+int sz=900;
+calcSimple cs(sz);
 void plotOnePict(char* fbp, struct fb_fix_screeninfo& finfo){
 	// draw...
 	int x, y;
 	unsigned int pix_offset;
-
-	int sz=900;
-	calcSimple cs(sz);
-	cs.doit();
-	cs.mdo(nbRay);
+	
+	cs.mdo(nbRayPerImage);
 	//	cs.debug();
 	for (y = 0; y < sz; y++) {
 		for (x = 0; x < sz; x++) {
