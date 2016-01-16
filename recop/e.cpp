@@ -10,11 +10,11 @@
 #include <iostream>
 using namespace std;
 //const int nbRay=4096*64*2;
-const int nbRay=120*4*5*3;
+const int nbRay=120*4*5*3*2;
 const int dist=360*2*4*10;
 const bool loop=true;
-const int starDissip=5000;
-const int nbRayPerImage=250*8*5*2*5;
+const int starDissip=50*6/3*2;
+const int nbRayPerImage=250*8*5*10;
 // application entry point
 class ray{
 	private :
@@ -27,6 +27,7 @@ class ray{
 		ray(int sz) : sz(sz){};
 		void reset(int startx,int starty,int startLive,int startIntens){
 			vx=startx;vy=starty;toLive=startLive;vintens=startIntens;
+			if(startIntens<0) toLive=toLive*2;
 		}	
 		int x(){return vx;};
 		int y(){return vy;};
@@ -80,7 +81,7 @@ class calcSimple{
 				ray r(sz); 
 				int dir=1;
 				if(rand()%1000 < starDissip) dir=-1;
-				r.reset(sz/2,sz/2,dist,1);				
+				r.reset(sz/2,sz/2,dist,dir);				
 				rays.push_back(r);
 
 				++nbRayAlive;
@@ -89,10 +90,13 @@ class calcSimple{
 			if(currRay>=nbRayAlive){currRay=0;};
 			ray& r=rays[currRay];
 				if(r.dead()){
-					r.reset(sz/2,sz/2,dist,1);
+					int dir=1;
+					if(rand()%1000 < starDissip) dir=-1;
+					r.reset(sz/2,sz/2,dist,dir);
 					}
 				int ind=r.x()+r.y()*sz;
-				dat[ind]+=r.intens();
+				if((dat[ind] >0) || (r.intens() >0))
+					dat[ind]+=r.intens();
 				r.doit();
 			//	if(rand()%1000000 <starDissip)
 			//			decStar();
