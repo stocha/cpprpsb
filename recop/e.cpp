@@ -13,7 +13,7 @@ using namespace std;
 const int nbRay=120*4*5*3;
 const int dist=360*2*4*10;
 const bool loop=true;
-const int starDissip=5;
+const int starDissip=5000;
 const int nbRayPerImage=250*8*5*2*5;
 // application entry point
 class ray{
@@ -78,6 +78,8 @@ class calcSimple{
 		void doit(){
 			if(nbRayAlive<nbRay){ 
 				ray r(sz); 
+				int dir=1;
+				if(rand()%1000 < starDissip) dir=-1;
 				r.reset(sz/2,sz/2,dist,1);				
 				rays.push_back(r);
 
@@ -89,10 +91,11 @@ class calcSimple{
 				if(r.dead()){
 					r.reset(sz/2,sz/2,dist,1);
 					}
-				++dat[r.x()+r.y()*sz];
+				int ind=r.x()+r.y()*sz;
+				dat[ind]+=r.intens();
 				r.doit();
-				if(rand()%1000000 <starDissip)
-						decStar();
+			//	if(rand()%1000000 <starDissip)
+			//			decStar();
 
 
 		}	
