@@ -10,19 +10,17 @@
 #include <iostream>
 using namespace std;
 const bool loop=true;
-const int nbRayPerImage=1;
+const int nbRayPerImage=3;
 // application entry point
 ;
 
 class calcSimple{
 	private :
 		const int sz;
-		int nbRayAlive=0;
-		int currRay=0;
 	public :
-		vector<unsigned long long> dat;
-		vector<unsigned long long> sec;
-		calcSimple(int sz) : sz(sz),dat(sz*sz){
+		vector<unsigned int> dat;
+		vector<unsigned int> sec;
+		calcSimple(int sz) : sz(sz),dat(sz*sz),sec(sz*sz){
 
 			for(int i=0;i<sz*sz;i++){
 				dat[i]=0;
@@ -37,22 +35,32 @@ class calcSimple{
 			}
 		}
 
-		unsigned long long get(int x,int y){
+		unsigned int get(int x,int y){
 
 			return dat[y*sz + x];
 		}
-		int getOffset(int x, int y) {y*sz+x;}
-		void set(int x,int y,unsigned long long v){
+		int getOffset(int x, int y) {return y*sz+x;}
+		void set(int x,int y,unsigned int v){
 			dat[y*sz + x]=v;
 		}
 		void doit(){
 			for( int i=0;i<sz*sz;i++) sec[i]=dat[i]; 
 			for(int x=1;x<sz-1;x++) for (int y=1;y<sz-1;y++){
-
+				int i=getOffset(x,y);
 				dat[i]=sec[i]&3;
-				
+					
+				int up=getOffset(x,y+1);
+				int down=getOffset(x,y-1);	
+				int left=getOffset(x-1,y);
+				int right=getOffset(x+1,y);
+
+				dat[i]+=sec[up]>>2;
+				dat[i]+=sec[down]>>2;
+				dat[i]+=sec[left]>>2;
+				dat[i]+=sec[right]>>2;
 						
 			}			
+			set(sz/2,sz/2,1<<23);
 		}	
 		void mdo(int nb){
 			for(int i=0;i<nb;++i){
@@ -96,7 +104,7 @@ void plotOnePict(char* fbp, struct fb_fix_screeninfo& finfo){
 			pix_offset = 1524+x * 4+ y * finfo.line_length ;
 
 			// now this is about the same as fbp[pix_offset] = value
-			unsigned long long rv=cs.get(x,y);
+			unsigned int rv=cs.get(x,y);
 			unsigned int v=0;	
 
 			if(rv<255) v=pix(rv,0,0);
