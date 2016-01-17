@@ -10,7 +10,7 @@
 #include <iostream>
 using namespace std;
 const bool loop=true;
-const int nbRayPerImage=6;
+const int nbRayPerImage=20;
 const int matsz=300;
 const int decImage=1800-matsz;
 // application entry point
@@ -27,6 +27,15 @@ class calcSimple{
 			for(int i=0;i<sz*sz;i++){
 				dat[i]=0;
 			}
+	//		set(sz/2+100,sz/2,1<<31);
+	//		set(sz/2-100,sz/2,1<<31);
+		//j	set(sz/2,sz/2-50,1<<31);
+
+			doit();
+		//	set(sz/2+100,sz/2,1<<31);
+			//set(sz/2-100,sz/2,1<<31);
+			//set(sz/2,sz/2-50,1<<31);
+
 		};	
 
 		void decStar(){
@@ -61,10 +70,10 @@ class calcSimple{
 				dat[i]+=sec[right]>>2;
 						
 			}			
-			set(sz/2+100,sz/2,1<<23);
+			set(sz/2+100,sz/2,1<<16);
 			
-			set(sz/2-100,sz/2,1<<17);
-			set(sz/2,sz/2-50,1<<9);
+			set(sz/2-100,sz/2,1<<16);
+			set(sz/2,sz/2-50,1<<16);
 		}	
 		void mdo(int nb){
 			for(int i=0;i<nb;++i){
@@ -112,7 +121,16 @@ unsigned int liss(unsigned int src){
 		ve=pborn-bl;
 		return pix(ro,ve,bl);	
 	};
+	born=(1<<30);
+	if(src<born) { 
+		//bl=src>>16;
+		bl=255;
+		ro=src>>24;
+		ve=src>>24;
+		return pix(ro,ve,bl);	
+	};
 	return pix(255,255,255);
+
 		
 			
 			
