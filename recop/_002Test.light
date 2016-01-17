@@ -9,10 +9,50 @@
 #include <vector>
 #include <iostream>
 using namespace std;
+//const int nbRay=4096*64*2;
+const int nbRay=120*4*5*3*2;
+const int dist=360*2*4*10;
 const bool loop=true;
-const int nbRayPerImage=1;
+const int starDissip=50*6/3*2;
+const int nbRayPerImage=250*8*5*10*10;
 // application entry point
-;
+class ray{
+	private :
+		int vx=0;
+		int vy=0;
+		int toLive=0;
+		const int sz=0;
+		int vintens=1;
+	public :
+		ray(int sz) : sz(sz){};
+		void reset(int startx,int starty,int startLive,int startIntens){
+			vx=startx;vy=starty;toLive=startLive;vintens=startIntens;
+			if(startIntens<0) toLive=toLive*2;
+		}	
+		int x(){return vx;};
+		int y(){return vy;};
+		int intens() {return vintens;}
+		void doit(){
+			int sx=-1;
+			int sy=-1;
+			int r=rand()&3;
+			if(r==0) {sx=1;sy=0;}
+			if(r==1) {sx=0;sy=1;}
+			if(r==2) {sx=-1;sy=0;}
+			if(r==3) {sx=0;sy=-1;}
+			vx+=sx;
+			vy+=sy;
+			
+			--toLive;
+			if(toLive<0) toLive=0;
+			if(vx>sz-1) toLive=0;
+			if(vx<1) toLive=0;
+			if(vy>sz-1) toLive=0;
+			if(vy<1) toLive=0;
+
+		}
+		bool dead(){return toLive==0;};
+};
 
 class calcSimple{
 	private :
@@ -21,12 +61,12 @@ class calcSimple{
 		int currRay=0;
 	public :
 		vector<unsigned long long> dat;
+		vector<ray> rays;
 		calcSimple(int sz) : sz(sz),dat(sz*sz){
 
 			for(int i=0;i<sz*sz;i++){
 				dat[i]=0;
 			}
-			set(sz/2,sz/2,1<<23);
 		};	
 
 		void decStar(){
@@ -40,10 +80,32 @@ class calcSimple{
 
 			return dat[y*sz + x];
 		}
-		void set(int x,int y,unsigned long long v){
-			dat[y*sz + x]=v;
-		}
 		void doit(){
+			if(nbRayAlive<nbRay){ 
+				ray r(sz); 
+				int dir=1;
+				if(rand()%1000 < starDissip) dir=-1;
+				r.reset(sz/2,sz/2,dist,dir);				
+				rays.push_back(r);
+
+				++nbRayAlive;
+			}	
+			++currRay;
+			if(currRay>=nbRayAlive){currRay=0;};
+			ray& r=rays[currRay];
+				if(r.dead()){
+					int dir=1;
+					if(rand()%1000 < starDissip) dir=-1;
+					r.reset(sz/2,sz/2,dist,dir);
+					}
+				int ind=r.x()+r.y()*sz;
+				if((dat[ind] >0) || (r.intens() >0))
+					dat[ind]+=r.intens();
+				r.doit();
+			//	if(rand()%1000000 <starDissip)
+			//			decStar();
+
+
 		}	
 		void mdo(int nb){
 			for(int i=0;i<nb;++i){
