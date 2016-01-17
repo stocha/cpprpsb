@@ -10,7 +10,9 @@
 #include <iostream>
 using namespace std;
 const bool loop=true;
-const int nbRayPerImage=3;
+const int nbRayPerImage=6;
+const int matsz=300;
+const int decImage=1800-matsz;
 // application entry point
 ;
 
@@ -25,7 +27,6 @@ class calcSimple{
 			for(int i=0;i<sz*sz;i++){
 				dat[i]=0;
 			}
-			set(sz/2,sz/2,1<<23);
 		};	
 
 		void decStar(){
@@ -60,7 +61,10 @@ class calcSimple{
 				dat[i]+=sec[right]>>2;
 						
 			}			
-			set(sz/2,sz/2,1<<23);
+			set(sz/2+100,sz/2,1<<23);
+			
+			set(sz/2-100,sz/2,1<<17);
+			set(sz/2,sz/2-50,1<<9);
 		}	
 		void mdo(int nb){
 			for(int i=0;i<nb;++i){
@@ -87,7 +91,43 @@ unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
 	//unsigned int rs=  -1;
 	return rs;
 }
-int sz=900;
+
+unsigned int liss(unsigned int src){
+	int ro=0;
+	int ve=0;
+	int bl=0;	
+	int born=(1<<8);
+	int pborn=0;
+	if(src<born) { ro=src; return pix(ro,ve,bl);}	
+	pborn=born;
+	born=(1<<16);
+	if(src<born) { 
+		ve=src>>8;
+		ro=pborn-ve;
+		return pix(ro,ve,bl);
+	}
+	born=(1<<24);
+	if(src<born) { 
+		bl=src>>16;
+		ve=pborn-bl;
+		return pix(ro,ve,bl);	
+	};
+	return pix(255,255,255);
+		
+			
+			
+
+	//if(rv<255) v=pix(rv,0,0);
+//	else if(rv<255*3) v= pix(255,(rv-255 )/2,0);	
+//	else if(rv<255*7) v= pix(255,255,(rv-255*3)/4);	
+	//else if(rv<255*3) v= pix(rv-255*3,rv-255,rv-255*2);	
+//	else if(rv>=255*7) v= pix(255,255,255);
+
+
+
+}
+
+int sz=matsz;
 calcSimple cs(sz);
 void plotOnePict(char* fbp, struct fb_fix_screeninfo& finfo){
 	// draw...
@@ -101,24 +141,24 @@ void plotOnePict(char* fbp, struct fb_fix_screeninfo& finfo){
 
 			// calculate the pixel's byte offset inside the buffer
 			// see the image above in the blog...
-			pix_offset = 1524+x * 4+ y * finfo.line_length ;
+			pix_offset = decImage*4+x * 4+ y * finfo.line_length ;
 
 			// now this is about the same as fbp[pix_offset] = value
 			unsigned int rv=cs.get(x,y);
 			unsigned int v=0;	
 
-			if(rv<255) v=pix(rv,0,0);
-			else if(rv<255*3) v= pix(255,(rv-255 )/2,0);	
-			else if(rv<255*7) v= pix(255,255,(rv-255*3)/4);	
-			//else if(rv<255*3) v= pix(rv-255*3,rv-255,rv-255*2);	
-			else if(rv>=255*7) v= pix(255,255,255);
+//			if(rv<255) v=pix(rv,0,0);
+//			else if(rv<255*3) v= pix(255,(rv-255 )/2,0);	
+//			else if(rv<255*7) v= pix(255,255,(rv-255*3)/4);	
+//			//else if(rv<255*3) v= pix(rv-255*3,rv-255,rv-255*2);	
+//			else if(rv>=255*7) v= pix(255,255,255);
 
 			//	if(v>0) cout << v << " " << x << " " << y << endl;
-			unsigned int gray=v ;
+//			unsigned int gray=v ;
 			//if(v>255 ) gray=255;
-			unsigned int trv=(unsigned int)(rv^(rv>>1));
-			trv=(trv>>16 & 255 ) | (trv&(255<<8))| (trv<<16 )& ((255<<16));	
-			*((int*)(fbp + pix_offset)) =trv;
+//			unsigned int trv=(unsigned int)(rv^(rv>>1));
+//			trv=(trv>>16 & 255 ) | (trv&(255<<8))| (trv<<16 )& ((255<<16));	
+			*((int*)(fbp + pix_offset)) =liss(rv);
 
 		}
 	}
