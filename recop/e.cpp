@@ -21,6 +21,7 @@ class calcSimple{
 		int currRay=0;
 	public :
 		vector<unsigned long long> dat;
+		vector<unsigned long long> sec;
 		calcSimple(int sz) : sz(sz),dat(sz*sz){
 
 			for(int i=0;i<sz*sz;i++){
@@ -40,10 +41,18 @@ class calcSimple{
 
 			return dat[y*sz + x];
 		}
+		int getOffset(int x, int y) {y*sz+x;}
 		void set(int x,int y,unsigned long long v){
 			dat[y*sz + x]=v;
 		}
 		void doit(){
+			for( int i=0;i<sz*sz;i++) sec[i]=dat[i]; 
+			for(int x=1;x<sz-1;x++) for (int y=1;y<sz-1;y++){
+
+				dat[i]=sec[i]&3;
+				
+						
+			}			
 		}	
 		void mdo(int nb){
 			for(int i=0;i<nb;++i){
