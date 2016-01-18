@@ -22,19 +22,22 @@ class calcSimple{
 	public :
 		vector<unsigned int> dat;
 		vector<unsigned int> sec;
+		void initStartDist(){
+		//		set(sz/2+100,sz/2,1<<31);
+	//		set(sz/2-100,sz/2,1<<31);
+		//	set(sz/2,sz/2-50,1<<31);
+
+			set(sz/2,sz/2,1<<31);
+
+		}
 		calcSimple(int sz) : sz(sz),dat(sz*sz),sec(sz*sz){
 
 			for(int i=0;i<sz*sz;i++){
 				dat[i]=0;
 			}
-	//		set(sz/2+100,sz/2,1<<31);
-	//		set(sz/2-100,sz/2,1<<31);
-		//j	set(sz/2,sz/2-50,1<<31);
-
+			initStartDist();
 			doit();
-		//	set(sz/2+100,sz/2,1<<31);
-			//set(sz/2-100,sz/2,1<<31);
-			//set(sz/2,sz/2-50,1<<31);
+			initStartDist();
 
 		};	
 
@@ -70,10 +73,14 @@ class calcSimple{
 				dat[i]+=sec[right]>>2;
 						
 			}			
-			set(sz/2+100,sz/2,1<<16);
+			//set(sz/2+100,sz/2,1<<30);
 			
-			set(sz/2-100,sz/2,1<<16);
-			set(sz/2,sz/2-50,1<<16);
+			//set(sz/2-100,sz/2,1<<30);
+			//for(int i=0;i<sz;i++){
+			//	if(i%50!=0)
+			//	set(sz/2,i,0);
+			//}
+			//set(sz/2,sz/2-50,1<<30);
 		}	
 		void mdo(int nb){
 			for(int i=0;i<nb;++i){
@@ -102,6 +109,7 @@ unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
 }
 
 unsigned int liss(unsigned int src){
+	return src&((1<<24)-1);
 	int ro=0;
 	int ve=0;
 	int bl=0;	
