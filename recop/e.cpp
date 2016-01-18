@@ -13,7 +13,8 @@ const bool loop=true;
 const int nbRayPerImage=10;
 const int matsz=200;
 const int decImage=1800-matsz;
-const bool donuts_shape=true;
+const bool donuts_shape=false;//true;
+const unsigned int maxImage=0;//nbRayPerImage*40;
 // application entry point
 ;
 
@@ -21,15 +22,14 @@ class calcSimple{
 	private :
 		const int sz;
 	public :
+		int nbImage=0;
 		vector<unsigned int> dat;
 		vector<unsigned int> sec;
 		void initStartDist(){
-		//		set(sz/2+100,sz/2,1<<31);
-	//		set(sz/2-100,sz/2,1<<31);
-		//	set(sz/2-50,sz/2-50,1<<31);
+			set(sz/2,sz/2,1<<26);
+	//		for(int i=sz/4;i<(sz/2+sz/4);i++)
+	//			set(i,sz/2,1<<31);
 
-			set(sz/2,sz/2,1<<31);
-			set(sz/2+sz/4,sz/2+sz/4,1<<31);
 
 		}
 		calcSimple(int sz) : sz(sz),dat(sz*sz),sec(sz*sz){
@@ -71,6 +71,8 @@ class calcSimple{
 			}
 		}
 		void doit(){
+			if(maxImage>0)	if(nbImage>maxImage) return;
+			++nbImage;
 			donuts();
 			for( int i=0;i<sz*sz;i++) sec[i]=dat[i]; 
 			for(int x=1;x<sz-1;x++) for (int y=1;y<sz-1;y++){
@@ -124,7 +126,7 @@ unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
 }
 
 unsigned int liss(unsigned int src2){
-	return src2&((1<<24)-1);
+	//return src2&((1<<24)-1);
 	int src=src2;
 //	if(src&1==1) src=0xFFFFFF;
 //	if(src&2==2) src=0xFFFFFF;
