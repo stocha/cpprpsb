@@ -10,9 +10,10 @@
 #include <iostream>
 using namespace std;
 const bool loop=true;
-const int nbRayPerImage=20;
-const int matsz=300;
+const int nbRayPerImage=10;
+const int matsz=200;
 const int decImage=1800-matsz;
+const bool donuts_shape=true;
 // application entry point
 ;
 
@@ -25,9 +26,10 @@ class calcSimple{
 		void initStartDist(){
 		//		set(sz/2+100,sz/2,1<<31);
 	//		set(sz/2-100,sz/2,1<<31);
-		//	set(sz/2,sz/2-50,1<<31);
+		//	set(sz/2-50,sz/2-50,1<<31);
 
 			set(sz/2,sz/2,1<<31);
+			set(sz/2+sz/4,sz/2+sz/4,1<<31);
 
 		}
 		calcSimple(int sz) : sz(sz),dat(sz*sz),sec(sz*sz){
@@ -56,7 +58,20 @@ class calcSimple{
 		void set(int x,int y,unsigned int v){
 			dat[y*sz + x]=v;
 		}
+		void donuts(){
+			if(donuts_shape){
+				for(int x=0;x<sz;x++){
+					dat[getOffset(x,0)]=dat[getOffset(x,sz-2)];
+					dat[getOffset(x,sz-1)]=dat[getOffset(x,1)];
+					dat[getOffset(0,x)]=dat[getOffset(sz-2,x)];
+					dat[getOffset(sz-1,x)]=dat[getOffset(1,x)];
+			
+				}
+
+			}
+		}
 		void doit(){
+			donuts();
 			for( int i=0;i<sz*sz;i++) sec[i]=dat[i]; 
 			for(int x=1;x<sz-1;x++) for (int y=1;y<sz-1;y++){
 				int i=getOffset(x,y);
@@ -108,8 +123,11 @@ unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
 	return rs;
 }
 
-unsigned int liss(unsigned int src){
-	return src&((1<<24)-1);
+unsigned int liss(unsigned int src2){
+	return src2&((1<<24)-1);
+	int src=src2;
+//	if(src&1==1) src=0xFFFFFF;
+//	if(src&2==2) src=0xFFFFFF;
 	int ro=0;
 	int ve=0;
 	int bl=0;	
