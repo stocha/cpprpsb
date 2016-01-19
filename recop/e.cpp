@@ -10,8 +10,8 @@
 #include <iostream>
 using namespace std;
 const bool loop=true;
-const int nbRayPerImage=10;
-const int matsz=200;
+const int nbRayPerImage=1;
+const int matsz=500;
 const int decImage=1800-matsz;
 const bool donuts_shape=false;//true;
 const unsigned int maxImage=0;//nbRayPerImage*40;
@@ -26,7 +26,10 @@ class calcSimple{
 		vector<unsigned int> dat;
 		vector<unsigned int> sec;
 		void initStartDist(){
-			set(sz/2,sz/2,1<<26);
+			int xMax=sz/3+sz/2;
+		        int yMax=sz/3+sz/2;
+			set(sz/5,sz/5,1<<26);
+			//set(xMax,yMax,1<<26);
 	//		for(int i=sz/4;i<(sz/2+sz/4);i++)
 	//			set(i,sz/2,1<<31);
 
@@ -70,7 +73,43 @@ class calcSimple{
 
 			}
 		}
+		void doLine(){
+			if(maxImage>0)	if(nbImage>maxImage) return;
+			++nbImage;
+			int xMax=sz/5+sz/3+sz/2;
+			int yMax=sz/5+sz/3+sz/2;
+			int xMin=sz/5;
+			int yMin=sz/5;
+			for( int i=0;i<sz*sz;i++) sec[i]=dat[i]; 
+			for(int x=1;x<sz-1;x++) for (int y=1;y<sz-1;y++){ int i=getOffset(x,y);
+					
+				int up=getOffset(x,y+1);
+				int down=getOffset(x,y-1);	
+				int left=getOffset(x-1,y);
+				int right=getOffset(x+1,y);
+				
+				int counVois=0;
+				if(x<=xMax) counVois++;
+				if(y<=yMax) counVois++;	
+				if(x>=xMin) counVois++;
+				if(y>=yMin) counVois++;
+				if(counVois >0){	
+					dat[i]=sec[i]%counVois;
+					if(x<=xMax)
+						dat[i]+=sec[right]/counVois;
+					if(y<=yMax)
+						dat[i]+=sec[up]/counVois;;
+					if(x>=xMin)
+						dat[i]+=sec[left]/counVois;
+					if(y>=yMin)
+						dat[i]+=sec[down]/counVois;
+
+				}		
+			}			
+			
+		}
 		void doit(){
+			doLine(); return;
 			if(maxImage>0)	if(nbImage>maxImage) return;
 			++nbImage;
 			donuts();
@@ -126,7 +165,7 @@ unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
 }
 
 unsigned int liss(unsigned int src2){
-	//return src2&((1<<24)-1);
+	return src2&((1<<24)-1);
 	int src=src2;
 //	if(src&1==1) src=0xFFFFFF;
 //	if(src&2==2) src=0xFFFFFF;
