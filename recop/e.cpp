@@ -10,7 +10,8 @@
 #include <iostream>
 using namespace std;
 const int sz=200;
-const int nbRay=1000;
+const int nbRay=10;
+const int nbStepFrame=1000000;
 const int dist=sz;
 class ray{
 	private :
@@ -19,6 +20,8 @@ class ray{
 		int toLive=0;
 		const int sz=0;
 		int vintens=1;
+		vector<int> xt;
+		vector<int> yt;
 	public :
 		ray(int sz) : sz(sz){};
 		void reset(int startx,int starty,int startLive,int startIntens){
@@ -36,6 +39,8 @@ class ray{
 			if(r==1) {sx=0;sy=1;}
 			if(r==2) {sx=-1;sy=0;}
 			if(r==3) {sx=0;sy=-1;}
+			xt.push_back(vx);
+			yt.push_back(vy);
 			vx+=sx;
 			vy+=sy;
 			
@@ -45,6 +50,7 @@ class ray{
 			if(vx<1) toLive=0;
 			if(vy>sz-1) toLive=0;
 			if(vy<1) toLive=0;
+			if(toLive==0){ xt.clear();yt.clear();};
 
 		}
 		bool dead(){return toLive==0;};
@@ -95,8 +101,6 @@ class calcSimple{
 				if((dat[ind] >0) || (r.intens() >0))
 					dat[ind]+=r.intens();
 				r.doit();
-			//	if(rand()%1000000 <starDissip)
-			//			decStar();
 		}	
 		void mdo(int nb){
 			for(int i=0;i<nb;++i){
@@ -118,15 +122,14 @@ void plotOnePict(char* fbp, struct fb_fix_screeninfo& finfo){
 	unsigned int pix_offset;
 
 	calcSimple cs(sz);
-	cs.doit();
-	cs.mdo(nbRay);
+	cs.mdo(nbStepFrame);
 	//	cs.debug();
 	for (y = 0; y < sz; y++) {
 		for (x = 0; x < sz; x++) {
 
 			// calculate the pixel's byte offset inside the buffer
 			// see the image above in the blog...
-			pix_offset = 1524+x * 4+ y * finfo.line_length ;
+			pix_offset = x * 4+ y * finfo.line_length ;
 
 			// now this is about the same as fbp[pix_offset] = value
 			unsigned int rv=cs.get(x,y);
