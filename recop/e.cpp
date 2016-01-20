@@ -9,10 +9,10 @@
 #include <vector>
 #include <iostream>
 using namespace std;
-const int sz=200;
+const int sz=500;
 const int nbRay=10;
-const int nbStepFrame=1000000;
-const int dist=sz;
+const int nbStepFrame=100000;
+const int dist=30*3*10;
 class ray{
 	private :
 		int vx=0;
@@ -27,10 +27,15 @@ class ray{
 		void reset(int startx,int starty,int startLive,int startIntens){
 			vx=startx;vy=starty;toLive=startLive;vintens=startIntens;
 			if(startIntens<0) toLive=toLive*2;
+
+			{ xt.clear();yt.clear();};
 		}	
 		int x(){return vx;};
 		int y(){return vy;};
 		int intens() {return vintens;}
+		int size(){return xt.size();}
+		int xat(int at){return xt[at];}
+		int yat(int at){return yt[at];}
 		void doit(){
 			int sx=-1;
 			int sy=-1;
@@ -50,7 +55,6 @@ class ray{
 			if(vx<1) toLive=0;
 			if(vy>sz-1) toLive=0;
 			if(vy<1) toLive=0;
-			if(toLive==0){ xt.clear();yt.clear();};
 
 		}
 		bool dead(){return toLive==0;};
@@ -94,12 +98,24 @@ class calcSimple{
 			if(currRay>=nbRayAlive){currRay=0;};
 			ray& r=rays[currRay];
 				if(r.dead()){
-						int dir=1;
-						r.reset(sz/2,sz/2,dist,dir);
+					int dstx=sz/2+30*2;
+					int dsty=sz/2+10*2;
+					bool cond=false;
+					for(int i=0;i<r.size();++i){
+					
+						if(r.xat(i)==sz/2 +30*2 && r.yat(i)==sz/2 - 20*2) cond=true; 
+						if(r.xat(i)==sz/2 -30*2 && r.yat(i)==sz/2 - 20*2) cond=true; 
+
 					}
-				int ind=r.x()+r.y()*sz;
-				if((dat[ind] >0) || (r.intens() >0))
-					dat[ind]+=r.intens();
+					if(cond==true) 	for(int i=0;i<r.size();i++){
+								int ind=r.xat(i)+r.yat(i)*sz;
+								if((dat[ind] >0) || (r.intens() >0))
+									dat[ind]+=r.intens();
+							}
+					int dir=1;
+					r.reset(sz/2,sz/2,dist,dir);
+				}
+
 				r.doit();
 		}	
 		void mdo(int nb){
@@ -114,14 +130,61 @@ class calcSimple{
 			}
 		}
 };
+// pixel_asm
+unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
+
+	r=r&255;
+	g=g&255;
+	b=b&255;
+	//unsigned int rs=(r<<0);
+	unsigned int rs=(r<<16)|(g<<8)|b;
+	//unsigned int rs=(b<<8);
+	//unsigned int rs=  -1;
+	return rs;
+}
+unsigned int liss(unsigned int src2){
+//	return src2&((1<<24)-1);
+	int src=src2;
+//	if(src&1==1) src=0xFFFFFF;
+//	if(src&2==2) src=0xFFFFFF;
+	int ro=0;
+	int ve=0;
+	int bl=0;	
+	int born=(1<<8);
+	int pborn=0;
+	if(src<born) { ro=src; return pix(ro,ve,bl);}	
+	pborn=born;
+	born=(1<<16);
+	if(src<born) { 
+		ve=src>>8;
+		ro=pborn-ve;
+		return pix(ro,ve,bl);
+	}
+	born=(1<<24);
+	if(src<born) { 
+		bl=src>>16;
+		ve=pborn-bl;
+		return pix(ro,ve,bl);	
+	};
+	born=(1<<30);
+	if(src<born) { 
+		//bl=src>>16;
+		bl=255;
+		ro=src>>24;
+		ve=src>>24;
+		return pix(ro,ve,bl);	
+	};
+	return pix(255,255,255);
+}
 
 
+
+	calcSimple cs(sz);
 void plotOnePict(char* fbp, struct fb_fix_screeninfo& finfo){
 	// draw...
 	int x, y;
 	unsigned int pix_offset;
 
-	calcSimple cs(sz);
 	cs.mdo(nbStepFrame);
 	//	cs.debug();
 	for (y = 0; y < sz; y++) {
@@ -129,17 +192,18 @@ void plotOnePict(char* fbp, struct fb_fix_screeninfo& finfo){
 
 			// calculate the pixel's byte offset inside the buffer
 			// see the image above in the blog...
-			pix_offset = x * 4+ y * finfo.line_length ;
+			pix_offset = (sz)*4+x * 4+ y * finfo.line_length ;
 
 			// now this is about the same as fbp[pix_offset] = value
 			unsigned int rv=cs.get(x,y);
-			*((int*)(fbp + pix_offset)) =rv;
+			*((int*)(fbp + pix_offset)) =liss(rv);
 
 		}
 	}
 
 
 }
+
 
 void drawit(char* fbp, struct fb_fix_screeninfo& finfo){
 	do{
