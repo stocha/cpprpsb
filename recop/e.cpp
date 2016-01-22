@@ -9,69 +9,42 @@
 #include <vector>
 #include <iostream>
 using namespace std;
-const int sz=500;
-const int nbRay=10;
-const int nbStepFrame=100000;
-const int dist=30*3*10;
-class ray{
-	private :
-		int vx=0;
-		int vy=0;
-		int toLive=0;
-		const int sz=0;
-		int vintens=1;
-		vector<int> xt;
-		vector<int> yt;
-	public :
-		ray(int sz) : sz(sz){};
-		void reset(int startx,int starty,int startLive,int startIntens){
-			vx=startx;vy=starty;toLive=startLive;vintens=startIntens;
-			if(startIntens<0) toLive=toLive*2;
+const bool loop=true;
+const int nbRayPerImage=10;
+const int matsz=800;
+const int decImage=1800-matsz;
+const bool donuts_shape=false;//true;
+const unsigned int maxImage=0;//nbRayPerImage*40;
+// application entry point
+;
 
-			{ xt.clear();yt.clear();};
-		}	
-		int x(){return vx;};
-		int y(){return vy;};
-		int intens() {return vintens;}
-		int size(){return xt.size();}
-		int xat(int at){return xt[at];}
-		int yat(int at){return yt[at];}
-		void doit(){
-			int sx=-1;
-			int sy=-1;
-			int r=rand()&3;
-			if(r==0) {sx=1;sy=0;}
-			if(r==1) {sx=0;sy=1;}
-			if(r==2) {sx=-1;sy=0;}
-			if(r==3) {sx=0;sy=-1;}
-			xt.push_back(vx);
-			yt.push_back(vy);
-			vx+=sx;
-			vy+=sy;
-			
-			--toLive;
-			if(toLive<0) toLive=0;
-			if(vx>sz-1) toLive=0;
-			if(vx<1) toLive=0;
-			if(vy>sz-1) toLive=0;
-			if(vy<1) toLive=0;
-
-		}
-		bool dead(){return toLive==0;};
-};
 class calcSimple{
 	private :
 		const int sz;
-		int nbRayAlive=0;
-		int currRay=0;
 	public :
-		vector<unsigned long long> dat;
-		vector<ray> rays;
-		calcSimple(int sz) : sz(sz),dat(sz*sz){
+		int nbImage=0;
+		vector<unsigned int> dat;
+		vector<unsigned int> sec;
+		void initStartDist(){
+			int xMax=sz/3+sz/2;
+		        int yMax=sz/3+sz/2;
+			set(sz/2+sz/5,sz/2+sz/6,1<<26);
+			set(sz/2+sz/6,sz/2+sz/5,1<<26);
+			//set(xMax,yMax,1<<26);
+	//		for(int i=sz/4;i<(sz/2+sz/4);i++)
+	//			set(i,sz/2,1<<31);
+
+
+		}
+		calcSimple(int sz) : sz(sz),dat(sz*sz),sec(sz*sz){
 
 			for(int i=0;i<sz*sz;i++){
 				dat[i]=0;
 			}
+			initStartDist();
+			doit();
+			initStartDist();
+
 		};	
 
 		void decStar(){
@@ -81,42 +54,89 @@ class calcSimple{
 			}
 		}
 
-		unsigned long long get(int x,int y){
+		unsigned int get(int x,int y){
 
 			return dat[y*sz + x];
 		}
-		void doit(){
-			if(nbRayAlive<nbRay){ 
-				int dir=1;
-				ray r(sz); 
-				r.reset(sz/2,sz/2,dist,dir);				
-				rays.push_back(r);
-
-				++nbRayAlive;
-			}	
-			++currRay;
-			if(currRay>=nbRayAlive){currRay=0;};
-			ray& r=rays[currRay];
-				if(r.dead()){
-					int dstx=sz/2+30*2;
-					int dsty=sz/2+10*2;
-					bool cond=false;
-					for(int i=0;i<r.size();++i){
-					
-						if(r.xat(i)==sz/2 +30*2 && r.yat(i)==sz/2 - 20*2) cond=true; 
-						if(r.xat(i)==sz/2 -30*2 && r.yat(i)==sz/2 - 20*2) cond=true; 
-
-					}
-					if(cond==true) 	for(int i=0;i<r.size();i++){
-								int ind=r.xat(i)+r.yat(i)*sz;
-								if((dat[ind] >0) || (r.intens() >0))
-									dat[ind]+=r.intens();
-							}
-					int dir=1;
-					r.reset(sz/2,sz/2,dist,dir);
+		int getOffset(int x, int y) {return y*sz+x;}
+		void set(int x,int y,unsigned int v){
+			dat[y*sz + x]=v;
+		}
+		void donuts(){
+			if(donuts_shape){
+				for(int x=0;x<sz;x++){
+					dat[getOffset(x,0)]=dat[getOffset(x,sz-2)];
+					dat[getOffset(x,sz-1)]=dat[getOffset(x,1)];
+					dat[getOffset(0,x)]=dat[getOffset(sz-2,x)];
+					dat[getOffset(sz-1,x)]=dat[getOffset(1,x)];
+			
 				}
 
-				r.doit();
+			}
+		}
+		void doLine(){
+			if(maxImage>0)	if(nbImage>maxImage) return;
+			++nbImage;
+			int xMax=sz/5+sz/2;
+			int yMax=sz/3+sz/2;
+			int xMin=5;
+			int yMin=5;
+			for( int i=0;i<sz*sz;i++) sec[i]=dat[i]; 
+			for(int x=1;x<sz-1;x++) for (int y=1;y<sz-1;y++){ 
+				int i=getOffset(x,y);
+					
+				int up=getOffset(x,y-1);
+				int down=getOffset(x,y+1);	
+				int left=getOffset(x-1,y);
+				int right=getOffset(x+1,y);
+				
+				int counVois=0;
+				if(x+1<=xMax) counVois++;
+				if(y+1<=yMax) counVois++;	
+			//	if(x>=xMin) counVois++;
+			//	if(y>=yMin) counVois++;
+				if(counVois >0){	
+					sec[i]=sec[i]-sec[i]/counVois;
+				
+				if(x+1<=xMax){		dat[right]+=sec[i]/counVois; sec[i]=sec[i]-sec[i]/counVois;}
+				if(y+1<=yMax){			dat[down]+=sec[i]/counVois;sec[i]=sec[i]-sec[i]/counVois;}
+
+				}		
+			}			
+			
+			set(xMax,yMax,1<<26);
+			set(xMin,yMin,1<<26);
+			
+		}
+		void doit(){
+			//doLine(); return;
+			if(maxImage>0)	if(nbImage>maxImage) return;
+			++nbImage;
+			donuts();
+			for( int i=0;i<sz*sz;i++) sec[i]=dat[i]; 
+			for(int x=1;x<sz-1;x++) for (int y=1;y<sz-1;y++){
+				int i=getOffset(x,y);
+				dat[i]=sec[i]&3;
+					
+				int up=getOffset(x,y+1);
+				int down=getOffset(x,y-1);	
+				int left=getOffset(x-1,y);
+				int right=getOffset(x+1,y);
+
+				dat[i]+=sec[up]>>2;
+				dat[i]+=sec[down]>>2;
+				dat[i]+=sec[left]>>2;
+				dat[i]+=sec[right]>>2;
+						
+			}			
+			//set(sz/2+100,sz/2,1<<30);
+			
+			//set(sz/2-100,sz/2,1<<30);
+			//for(int i=0;i<sz;i++){
+			//	if(i%50!=0)
+			//	set(sz/2,sz/2,0);
+			//}
+			//set(sz/2,sz/2-50,1<<30);
 		}	
 		void mdo(int nb){
 			for(int i=0;i<nb;++i){
@@ -129,6 +149,7 @@ class calcSimple{
 				if(v!=0) cout << v << endl;	
 			}
 		}
+
 };
 // pixel_asm
 unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
@@ -142,9 +163,12 @@ unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
 	//unsigned int rs=  -1;
 	return rs;
 }
+
 unsigned int liss(unsigned int src2){
 //	return src2&((1<<24)-1);
+	
 	int src=src2;
+//	if((src&1)!=0) src=0xFF0000^src;
 //	if(src&1==1) src=0xFFFFFF;
 //	if(src&2==2) src=0xFFFFFF;
 	int ro=0;
@@ -175,41 +199,66 @@ unsigned int liss(unsigned int src2){
 		return pix(ro,ve,bl);	
 	};
 	return pix(255,255,255);
+
+		
+			
+			
+
+	//if(rv<255) v=pix(rv,0,0);
+//	else if(rv<255*3) v= pix(255,(rv-255 )/2,0);	
+//	else if(rv<255*7) v= pix(255,255,(rv-255*3)/4);	
+	//else if(rv<255*3) v= pix(rv-255*3,rv-255,rv-255*2);	
+//	else if(rv>=255*7) v= pix(255,255,255);
+
+
+
 }
 
-
-
-	calcSimple cs(sz);
+int sz=matsz;
+calcSimple cs(sz);
 void plotOnePict(char* fbp, struct fb_fix_screeninfo& finfo){
 	// draw...
 	int x, y;
 	unsigned int pix_offset;
-
-	cs.mdo(nbStepFrame);
+	
+	cs.mdo(nbRayPerImage);
 	//	cs.debug();
 	for (y = 0; y < sz; y++) {
 		for (x = 0; x < sz; x++) {
 
 			// calculate the pixel's byte offset inside the buffer
 			// see the image above in the blog...
-			pix_offset = (sz)*4+x * 4+ y * finfo.line_length ;
+			pix_offset = decImage*4+x * 4+ y * finfo.line_length ;
 
 			// now this is about the same as fbp[pix_offset] = value
 			unsigned int rv=cs.get(x,y);
+			unsigned int v=0;	
+
+//			if(rv<255) v=pix(rv,0,0);
+//			else if(rv<255*3) v= pix(255,(rv-255 )/2,0);	
+//			else if(rv<255*7) v= pix(255,255,(rv-255*3)/4);	
+//			//else if(rv<255*3) v= pix(rv-255*3,rv-255,rv-255*2);	
+//			else if(rv>=255*7) v= pix(255,255,255);
+
+			//	if(v>0) cout << v << " " << x << " " << y << endl;
+//			unsigned int gray=v ;
+			//if(v>255 ) gray=255;
+//			unsigned int trv=(unsigned int)(rv^(rv>>1));
+//			trv=(trv>>16 & 255 ) | (trv&(255<<8))| (trv<<16 )& ((255<<16));	
 			*((int*)(fbp + pix_offset)) =liss(rv);
 
 		}
 	}
 
+	//sleep(0);
 
 }
-
-
 void drawit(char* fbp, struct fb_fix_screeninfo& finfo){
 	do{
 		plotOnePict(fbp,finfo);
-	}while(true);
+	}while(loop);
 }
+unsigned int min (unsigned int a, unsigned int b){ if(a<b) return a; else return b;}
 int main(int argc, char* argv[])
 {
 	int fbfd = 0;
@@ -240,6 +289,15 @@ int main(int argc, char* argv[])
 
 	// Change variable info
 	vinfo.bits_per_pixel = 32;
+	// vinfo.grayscale=1;
+	// vinfo.red.offset    = 0;
+	// vinfo.red.length    = 8;
+	//            vinfo.green.offset  = 8;
+	//            vinfo.green.length  = 8;
+	//         vinfo.blue.offset   = 16;
+	//            vinfo.blue.length   = 8;
+	//            vinfo.transp.offset = 0;
+	//            vinfo.transp.length = 0;
 	if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &vinfo)) {
 		printf("Error setting variable information.\n");
 	}
@@ -273,6 +331,5 @@ int main(int argc, char* argv[])
 	close(fbfd);
 
 	return 0;
+
 }
-
-
