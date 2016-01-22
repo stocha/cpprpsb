@@ -1,7 +1,10 @@
 *
 !*/
 !*.*
+*.out
+*.exe
 *.swp
 !MakeFile
+!makefile
 *.o
 
