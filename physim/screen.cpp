@@ -20,6 +20,17 @@ namespace rawscreen{
 }
 using namespace rawscreen;
 
+void rawScreen::plot(int x, int y,int sx,int sy, unsigned int col){
+				// calculate the pixel's byte offset inside the buffer
+			// see the image above in the blog...
+			unsigned int pix_offset = (x <<2)+ y * finfo.line_length ;
+
+			// now this is about the same as fbp[pix_offset] = value
+			*((int*)(fbp + pix_offset)) =col;
+
+
+}
+void rawScreen::paint(){}
 rawScreen::rawScreen(){
 	// Open the file for reading and writing
 	fbfd = open("/dev/fb0", O_RDWR);

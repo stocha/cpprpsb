@@ -1,8 +1,9 @@
 namespace physim{
 	class rawScreen{
+		public :
 		rawScreen();
 		~rawScreen();
-		void plot(int x,int y,unsigned int col);
+		void plot(int x,int y,int sx,int sy,unsigned int col);
 		void paint();	
 	};	
 // T : szx() szy() [size]  x() y() col() [x, y , couleur ]
@@ -15,7 +16,7 @@ namespace physim{
 
 				void paint(){
 					for(int i=0;i<src.szx();++i) for(int j=0;j<src.szy();++j){
-						g.plot(src.x(),src.y(),src.col());
+						g.plot(i,j,src.szx(),src.szy(),src.col(i,j));
 					}
 					g.paint();	
 				}	
