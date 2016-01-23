@@ -66,12 +66,13 @@ class calcsimple{
 		const int sz;
 	public :
 		int nbimage=0;
+		int time=0;
 		vector<unsigned int> dat;
 		vector<unsigned int> sec;
 		void initstartdist(){
-			int xmax=sz/3+sz/2;
-		        int ymax=sz/3+sz/2;
-			set(sz/5,sz/5,1<<26);
+			int xmax=sz/2;
+		        int ymax=sz/2;
+		//	set(sz/5,sz/5,1<<26);
 			set(xmax,ymax,1<<26);
 	//		for(int i=sz/4;i<(sz/2+sz/4);i++)
 	//			set(i,sz/2,1<<31);
@@ -155,6 +156,7 @@ class calcsimple{
 		void doit(){
 			//doLine(); return;
 			donuts();
+			++time;
 			for( int i=0;i<sz*sz;i++) sec[i]=dat[i]; 
 			for(int x=1;x<sz-1;x++) for (int y=1;y<sz-1;y++){
 				int i=getOffset(x,y);
@@ -172,7 +174,8 @@ class calcsimple{
 						
 			}			
 			//set(sz/2+100,sz/2,1<<30);
-			
+			int cycle=1000*4;
+			if((time % cycle) == 0 || (time %cycle== 1)) {initstartdist();}
 			//set(sz/2-100,sz/2,1<<30);
 			//for(int i=0;i<sz;i++){
 			//	if(i%50!=0)
@@ -196,7 +199,7 @@ class calcsimple{
 
 
 int main(int argc, char* argv[]){
-	calcsimple rs(200);
+	calcsimple rs(250);
 	display<calcsimple,rawScreen> dis(rs);
 	while(true) { 
 rs.mdo(4);
