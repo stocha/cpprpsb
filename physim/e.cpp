@@ -6,7 +6,7 @@ using namespace physim;
 
 const bool loop=true;
 const int nbrayperimage=1;
-const int matsz=74;
+const int matsz=874;
 const int decimage=1800-matsz;
 const bool donuts_shape=true;
 const unsigned int maximage=0;//nbrayperimage*40;
