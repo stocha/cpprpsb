@@ -6,7 +6,7 @@ using namespace physim;
 
 const bool loop=true;
 const int nbrayperimage=1;
-const int matsz=200;
+const int matsz=800;
 const int decimage=1800-matsz;
 const bool donuts_shape=true;
 const unsigned int maximage=0;//nbrayperimage*40;
@@ -82,10 +82,10 @@ class calcsimple{
 			//if(!sens) set(xmax-sz/5,ymax-sz/6,- (valInit)); else set(xmax-sz/5,ymax-sz/6, (valInit));
 			//if(!sens) set(xmax+sz/6,ymax+sz/5,- (valInit)); else set(xmax+sz/6,ymax+sz/5, (valInit));
 
-			set(xmax-sz/12,ymax-sz/12, (valInit));
-			set(xmax+sz/12,ymax-sz/20, (valInit));
+		//	set(xmax-sz/12,ymax-sz/12, (valInit));
+		//	set(xmax+sz/12,ymax-sz/20, (valInit));
 
-			//set(xmax,ymax, (valInit));
+			set(xmax,ymax, (valInit));
 		}
 		calcsimple(int sz) : sz(sz),dat(sz*sz),sec(sz*sz),countVal(128){
 
@@ -109,7 +109,7 @@ class calcsimple{
 
 			return dat[y*sz + x];
 		}
-		const int zoom=4;
+		const int zoom=1;
 		int szy() { return sz*zoom;};
 		int szx() { return sz*zoom;};
 
@@ -125,9 +125,7 @@ class calcsimple{
 					dat[getOffset(x,sz-1)]=dat[getOffset(x,1)];
 					dat[getOffset(0,x)]=dat[getOffset(sz-2,x)];
 					dat[getOffset(sz-1,x)]=dat[getOffset(1,x)];
-			
 				}
-
 			}
 		}
 		void doLine(){
@@ -154,13 +152,10 @@ class calcsimple{
 				
 				if(x+1<=xMax){		dat[right]+=sec[i]/counVois; sec[i]=sec[i]-sec[i]/counVois;}
 				if(y+1<=yMax){			dat[down]+=sec[i]/counVois;sec[i]=sec[i]-sec[i]/counVois;}
-
 				}		
 			}			
-			
 			set(xMax,yMax,1<<26);
 			set(xMin,yMin,1<<26);
-			
 		}
 		void doit(){
 			//doLine(); return;
@@ -228,11 +223,11 @@ int main(int argc, char* argv[]){
 	display<calcsimple,rawPpm> dis(rs);
 	while(true) { 
 rs.mdo(1);
-if((++bouc) % 100==1 || (((bouc /1000 )==5 || (bouc/1000)==18) && (bouc %1000 <300))){
+if((++bouc) % 200==1 || (((bouc/1000)%5==1) && (bouc %1000 <200))){
 	cout << " " << bouc << "      " ;
 	rs.debug();
 	dis.paint();
-	if(bouc>18300) break;
+	if(bouc>30000) break;
 }
  };
 
