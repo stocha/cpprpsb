@@ -1,1 +1,2 @@
 avconv -f image2 -i dis%d.ppm ./tmp/a.mpg
+youtube-upload --email=denis.fidaali@gmail.com --password=pass --description=none --title=Test00 --category=Film --keywords=test a.mpg
