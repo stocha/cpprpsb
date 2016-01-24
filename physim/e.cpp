@@ -6,7 +6,7 @@ using namespace physim;
 
 const bool loop=true;
 const int nbrayperimage=1;
-const int matsz=74;
+const int matsz=874;
 const int decimage=1800-matsz;
 const bool donuts_shape=true;
 const unsigned int maximage=0;//nbrayperimage*40;
@@ -212,7 +212,7 @@ class calcsimple{
 			//	if(v!=0) cout << v << endl;	
 			//}
 			for(int i=0;i<24;i++){
-				cout << (int)(countVal[i]) << ";";
+				cout << countVal[i] << ";";
 			}
 			cout << endl;
 		}
@@ -223,12 +223,12 @@ class calcsimple{
 int main(int argc, char* argv[]){
 	int bouc=0;
 	calcsimple rs(matsz);
-	display<calcsimple,rawScreen> dis(rs);
+//	display<calcsimple,rawScreen> dis(rs);
 	while(true) { 
 rs.mdo(1);
 if(++bouc % 1000 ==0)
 rs.debug();
-dis.paint();
+//dis.paint();
  };
 
 
