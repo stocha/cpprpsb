@@ -6,9 +6,9 @@ using namespace physim;
 
 const bool loop=true;
 const int nbrayperimage=1;
-const int matsz=200;
+const int matsz=160;
 const int decimage=1800-matsz;
-const bool donuts_shape=false;//true;
+const bool donuts_shape=true;
 const unsigned int maximage=0;//nbrayperimage*40;
 // application entry point
 ;
@@ -25,8 +25,9 @@ unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
 	return rs;
 }
 unsigned int liss(int src2){
-	if(src2<0) return src2&((1<<24)-1);
+	//if(src2<0) return src2&((1<<24)-1);
 	int src=src2;
+	if(src2<0) src=-src2;
 //	if(src&1==1) src=0xFFFFFF;
 //	if(src&2==2) src=0xFFFFFF;
 	int ro=0;
@@ -72,19 +73,21 @@ class calcsimple{
 		void initstartdist(bool sens){
 			int xmax=sz/2;
 		        int ymax=sz/2;
-			if(!sens) set(xmax-sz/5,ymax-sz/6,- (1<<26)); else set(xmax-sz/5,ymax-sz/6, (1<<26));
-			if(!sens) set(xmax+sz/6,ymax+sz/5,- (1<<26)); else set(xmax+sz/6,ymax+sz/5, (1<<26));
+			//if(!sens) set(xmax-sz/5,ymax-sz/6,- (1<<26)); else set(xmax-sz/5,ymax-sz/6, (1<<26));
+			//if(!sens) set(xmax+sz/6,ymax+sz/5,- (1<<26)); else set(xmax+sz/6,ymax+sz/5, (1<<26));
 
+			set(xmax-sz/5,ymax-sz/6,- (1<<26));
 
+			set(xmax+sz/6,ymax, (1<<26));
 		}
 		calcsimple(int sz) : sz(sz),dat(sz*sz),sec(sz*sz){
 
 			for(int i=0;i<sz*sz;i++){
 				dat[i]=0;
 			}
-			//initstartdist(true);
-		//	doit();
-		//	initstartdist(true);
+			initstartdist(true);
+			doit();
+			initstartdist(true);
 
 		};	
 
@@ -172,9 +175,8 @@ class calcsimple{
 						
 			}			
 			//set(sz/2+100,sz/2,1<<30);
-			int cycle=100/2;
-			if((time % cycle) <= cycle/2-1 ) {initstartdist(true);}
-			else {initstartdist(false);}
+			int cycle=100/2*6*3;
+			if((time % cycle) <= cycle/2-1 ) {initstartdist(true);} else {initstartdist(false);}
 			//set(sz/2-100,sz/2,1<<30);
 			//for(int i=0;i<sz;i++){
 			//	if(i%50!=0)
