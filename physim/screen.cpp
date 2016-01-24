@@ -17,21 +17,37 @@ namespace rawscreen{
 	struct fb_fix_screeninfo finfo;
 	long int screensize = 0;
 	int *fbp = 0;
+	int szx;
+	int szy;
 }
 using namespace rawscreen;
 
-void rawScreen::plot(int x, int y,int sx,int sy, unsigned int col){
+void rawScreen::plot(int x, int y,unsigned int col){
 				// calculate the pixel's byte offset inside the buffer
 			// see the image above in the blog...
-			unsigned int pix_offset =(vinfo.xres-1-sx)*4+ (x <<2)+ y * finfo.line_length ;
+			unsigned int pix_offset =(vinfo.xres-1-szx)*4+ (x <<2)+ y * finfo.line_length ;
 
 			// now this is about the same as fbp[pix_offset] = value
 			*((int*)(fbp + pix_offset)) =col;
 
 
 }
+void rawPpm::plot(int x, int y, unsigned int col){
+	
+
+}
+void rawPpm::paint(){
+}
+rawPpm::~rawPpm(){}
+rawPpm::rawPpm(int sx,int sy){
+	szx=sx;
+	szy=sy;
+}
+
 void rawScreen::paint(){}
-rawScreen::rawScreen(){
+rawScreen::rawScreen(int sx,int sy){
+	szx=sx;
+	szy=sy;
 	// Open the file for reading and writing
 	fbfd = open("/dev/fb0", O_RDWR);
 	if (!fbfd) {
