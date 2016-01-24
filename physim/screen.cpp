@@ -16,7 +16,7 @@ namespace rawscreen{
 	struct fb_var_screeninfo vinfo;
 	struct fb_fix_screeninfo finfo;
 	long int screensize = 0;
-	char *fbp = 0;
+	int *fbp = 0;
 }
 using namespace rawscreen;
 
@@ -66,14 +66,14 @@ rawScreen::rawScreen(){
 
 	// map fb to user mem 
 	screensize = finfo.smem_len;
-	fbp = (char*)mmap(0, 
+	fbp = (int*)mmap(0, 
 			screensize, 
 			PROT_READ | PROT_WRITE, 
 			MAP_SHARED, 
 			fbfd, 
 			0);
 
-	if ((int)fbp == -1) {
+	if ((long int)fbp == -1) {
 		printf("Failed to mmap.\n");
 		exit (666);
 	}
