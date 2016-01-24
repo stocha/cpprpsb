@@ -46,7 +46,7 @@ void rawPpm::plot(int x, int y, unsigned int col){
 void rawPpm::paint(){
 	filebuf fb;
 	ostringstream fname; 
-	fname<<"./ppm/dis"<<(fileNum);
+	fname<<"./ppm/dis"<<(fileNum)<<".ppm";
 	++fileNum;
 	fb.open(fname.str(),ios::out);
 	ostream os(&fb);
