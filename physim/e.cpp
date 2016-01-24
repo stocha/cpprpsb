@@ -6,7 +6,7 @@ using namespace physim;
 
 const bool loop=true;
 const int nbrayperimage=1;
-const int matsz=800;
+const int matsz=74;
 const int decimage=1800-matsz;
 const bool donuts_shape=true;
 const unsigned int maximage=0;//nbrayperimage*40;
@@ -74,10 +74,11 @@ class calcsimple{
 		int time=0;
 		vector<int> dat;
 		vector<int> sec;
+		vector<int> countVal;
 		void initstartdist(bool sens){
 			int xmax=sz/2;
 		        int ymax=sz/2;
-			int valInit=1<<3;
+			int valInit=(1<<4)-1;
 			//if(!sens) set(xmax-sz/5,ymax-sz/6,- (valInit)); else set(xmax-sz/5,ymax-sz/6, (valInit));
 			//if(!sens) set(xmax+sz/6,ymax+sz/5,- (valInit)); else set(xmax+sz/6,ymax+sz/5, (valInit));
 
@@ -86,7 +87,7 @@ class calcsimple{
 
 			set(xmax,ymax, (valInit));
 		}
-		calcsimple(int sz) : sz(sz),dat(sz*sz),sec(sz*sz){
+		calcsimple(int sz) : sz(sz),dat(sz*sz),sec(sz*sz),countVal(128){
 
 			for(int i=0;i<sz*sz;i++){
 				dat[i]=0;
@@ -165,6 +166,7 @@ class calcsimple{
 			donuts();
 			++time;
 			for( int i=0;i<sz*sz;i++) sec[i]=dat[i]; 
+			for( int i=0;i<32;i++) countVal[i]=0;
 			for(int x=1;x<sz-1;x++) for (int y=1;y<sz-1;y++){
 				int i=getOffset(x,y);
 				int rest=sec[i]&7;
@@ -174,12 +176,20 @@ class calcsimple{
 				int down=getOffset(x,y-1);	
 				int left=getOffset(x-1,y);
 				int right=getOffset(x+1,y);
-
+				//if(false && (time&1)==0){
+			//		dat[i]+=sec[up]>>2;
+			//		dat[i]+=sec[down]>>2;
+			//	}else{
+			//		dat[i]+=sec[right]>>2;
+			//		dat[i]+=sec[left]>>2;
+			//	}
 				dat[i]+=sec[up]>>3;
 				dat[i]+=sec[down]>>3;
 				dat[i]+=sec[left]>>3;
 				dat[i]+=sec[right]>>3;
 						
+				int dati=dat[i];
+				++(countVal[dati]);
 			}			
 			//set(sz/2+100,sz/2,1<<30);
 			int cycle=100/2*6*3;
@@ -197,21 +207,30 @@ class calcsimple{
 			}
 		}
 		void debug(){
-			for(int x=0;x<sz;x++) for(int y=0;y<sz;y++) {
-				int v=get(x,y);
-				if(v!=0) cout << v << endl;	
+			//for(int x=0;x<sz;x++) for(int y=0;y<sz;y++) {
+			//	int v=get(x,y);
+			//	if(v!=0) cout << v << endl;	
+			//}
+			for(int i=0;i<24;i++){
+				cout << (int)(countVal[i]) << ";";
 			}
+			cout << endl;
 		}
 
 };
 
 
 int main(int argc, char* argv[]){
+	int bouc=0;
 	calcsimple rs(matsz);
 	display<calcsimple,rawScreen> dis(rs);
 	while(true) { 
 rs.mdo(1);
-dis.paint(); };
+if(++bouc % 1000 ==0)
+rs.debug();
+dis.paint();
+ };
+
 
 	return 0;
 }
