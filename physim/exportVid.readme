@@ -1,0 +1,1 @@
+avconv -f image2 -i dis%d.ppm ./tmp/a.mpg
