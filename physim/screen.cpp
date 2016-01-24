@@ -8,7 +8,11 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include <cstdlib>
+#include <sstream>
+#include <vector>
+#include <fstream>
 
+using namespace std;
 using namespace physim;
 namespace rawscreen{
 	int fbfd = 0;
@@ -19,6 +23,9 @@ namespace rawscreen{
 	int *fbp = 0;
 	int szx;
 	int szy;
+
+	int fileNum=0;	
+	vector<unsigned int> colDat;
 }
 using namespace rawscreen;
 
@@ -33,15 +40,43 @@ void rawScreen::plot(int x, int y,unsigned int col){
 
 }
 void rawPpm::plot(int x, int y, unsigned int col){
-	
+	colDat[x+szx*y]=col;	
 
 }
 void rawPpm::paint(){
+	filebuf fb;
+	ostringstream fname; 
+	fname<<"./ppm/dis"<<(fileNum);
+	++fileNum;
+	fb.open(fname.str(),ios::out);
+	ostream os(&fb);
+	os << "P3" << endl;
+	os << szx << " " << szy << endl;
+	os << 255 << endl;
+
+	for(int i=0;i<szx;++i){
+		for (int j=0;j<szy;++j) {
+			int col=colDat[i+j*szx];
+			int r=col&255;
+			int v=(col>>8) & 255;
+			int b=(col>>16)&255;
+			os << r << " " << v << " " << b << " ";
+
+
+
+		}
+		os << endl;
+	}
+
+	fb.close();
 }
 rawPpm::~rawPpm(){}
-rawPpm::rawPpm(int sx,int sy){
+rawPpm::rawPpm(int sx,int sy) {
 	szx=sx;
 	szy=sy;
+	
+	
+	for(int i=0;i<sx*sy;i++){ colDat.push_back(0);};
 }
 
 void rawScreen::paint(){}
