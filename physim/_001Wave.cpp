@@ -6,9 +6,9 @@ using namespace physim;
 
 const bool loop=true;
 const int nbrayperimage=1;
-const int matsz=300;
+const int matsz=200;
 const int decimage=1800-matsz;
-const bool donuts_shape=true;
+const bool donuts_shape=false;//true;
 const unsigned int maximage=0;//nbrayperimage*40;
 // application entry point
 ;
@@ -24,8 +24,8 @@ unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
 	//unsigned int rs=  -1;
 	return rs;
 }
-unsigned int liss(unsigned int src2){
-	//return src2&((1<<24)-1);
+unsigned int liss(int src2){
+	if(src2<0) return src2&((1<<24)-1);
 	int src=src2;
 //	if(src&1==1) src=0xFFFFFF;
 //	if(src&2==2) src=0xFFFFFF;
@@ -66,15 +66,14 @@ class calcsimple{
 		const int sz;
 	public :
 		int nbimage=0;
-		vector<unsigned int> dat;
-		vector<unsigned int> sec;
-		void initstartdist(){
-			int xmax=sz/3+sz/2;
-		        int ymax=sz/3+sz/2;
-			set(sz/5,sz/5,1<<26);
-			set(xmax,ymax,1<<26);
-	//		for(int i=sz/4;i<(sz/2+sz/4);i++)
-	//			set(i,sz/2,1<<31);
+		int time=0;
+		vector<int> dat;
+		vector<int> sec;
+		void initstartdist(bool sens){
+			int xmax=sz/2;
+		        int ymax=sz/2;
+			if(!sens) set(xmax-sz/5,ymax-sz/6,- (1<<26)); else set(xmax-sz/5,ymax-sz/6, (1<<26));
+			if(!sens) set(xmax+sz/6,ymax+sz/5,- (1<<26)); else set(xmax+sz/6,ymax+sz/5, (1<<26));
 
 
 		}
@@ -83,9 +82,9 @@ class calcsimple{
 			for(int i=0;i<sz*sz;i++){
 				dat[i]=0;
 			}
-			initstartdist();
-			doit();
-			initstartdist();
+			//initstartdist(true);
+		//	doit();
+		//	initstartdist(true);
 
 		};	
 
@@ -105,7 +104,7 @@ class calcsimple{
 
 		unsigned int col(int x, int y){ return liss(get(x,y));}
 		int getOffset(int x, int y) {return y*sz+x;}
-		void set(int x,int y,unsigned int v){
+		void set(int x,int y,int v){
 			dat[y*sz + x]=v;
 		}
 		void donuts(){
@@ -155,6 +154,7 @@ class calcsimple{
 		void doit(){
 			//doLine(); return;
 			donuts();
+			++time;
 			for( int i=0;i<sz*sz;i++) sec[i]=dat[i]; 
 			for(int x=1;x<sz-1;x++) for (int y=1;y<sz-1;y++){
 				int i=getOffset(x,y);
@@ -172,7 +172,9 @@ class calcsimple{
 						
 			}			
 			//set(sz/2+100,sz/2,1<<30);
-			
+			int cycle=100/2;
+			if((time % cycle) <= cycle/2-1 ) {initstartdist(true);}
+			else {initstartdist(false);}
 			//set(sz/2-100,sz/2,1<<30);
 			//for(int i=0;i<sz;i++){
 			//	if(i%50!=0)
@@ -196,10 +198,10 @@ class calcsimple{
 
 
 int main(int argc, char* argv[]){
-	calcsimple rs(200);
+	calcsimple rs(matsz);
 	display<calcsimple,rawScreen> dis(rs);
 	while(true) { 
-rs.mdo(4);
+rs.mdo(1);
 dis.paint(); };
 
 	return 0;
