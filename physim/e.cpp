@@ -109,10 +109,11 @@ class calcsimple{
 
 			return dat[y*sz + x];
 		}
-		int szy() { return sz;};
-		int szx() { return sz;};
+		const int zoom=4;
+		int szy() { return sz*zoom;};
+		int szx() { return sz*zoom;};
 
-		unsigned int col(int x, int y){ return liss(get(x,y));}
+		unsigned int col(int x, int y){ return liss(get(x/zoom,y/zoom));}
 		int getOffset(int x, int y) {return y*sz+x;}
 		void set(int x,int y,int v){
 			dat[y*sz + x]=v;
@@ -227,9 +228,11 @@ int main(int argc, char* argv[]){
 	display<calcsimple,rawPpm> dis(rs);
 	while(true) { 
 rs.mdo(1);
-if(++bouc % 10 ==0){
+if((++bouc) % 100==1 || (((bouc /1000 )==5 || (bouc/1000)==18) && (bouc %1000 <300))){
+	cout << " " << bouc << "      " ;
 	rs.debug();
 	dis.paint();
+	if(bouc>18300) break;
 }
  };
 
