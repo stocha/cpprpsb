@@ -1,2 +1,4 @@
 avconv -f image2 -i dis%d.ppm ./tmp/a.mpg
+
+avconv -f image2 -i dis%d.ppm -mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -g 300 -pass 1/2 ./tmp/c.mpg
 youtube-upload --email=denis.fidaali@gmail.com --password=pass --description=none --title=Test00 --category=Film --keywords=test a.mpg
