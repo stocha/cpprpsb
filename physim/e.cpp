@@ -6,7 +6,7 @@ using namespace physim;
 
 const bool loop=true;
 const int nbrayperimage=1;
-const int matsz=160;
+const int matsz=800;
 const int decimage=1800-matsz;
 const bool donuts_shape=true;
 const unsigned int maximage=0;//nbrayperimage*40;
@@ -25,11 +25,15 @@ unsigned int pix(unsigned int r,unsigned int g,unsigned int b){
 	return rs;
 }
 unsigned int liss(int src2){
-	//if(src2<0) return src2&((1<<24)-1);
+//	if(src2<0) return src2&((1<<24)-1);
 	int src=src2;
-	if(src2<0) src=-src2;
+//	if(src2<0) src=-src2;
+	if(src2>0) src=-src2;
+	if(src2>(1<<1)) src=0xFFFFFF;
+	if(src2>(1<<2)) src=0x005F00;
+	if(src2>(1<<3)) src=0xFF0000;
 //	if(src&1==1) src=0xFFFFFF;
-//	if(src&2==2) src=0xFFFFFF;
+//	if(src&2==2) src=0xFF00FF;
 	int ro=0;
 	int ve=0;
 	int bl=0;	
@@ -73,12 +77,14 @@ class calcsimple{
 		void initstartdist(bool sens){
 			int xmax=sz/2;
 		        int ymax=sz/2;
-			//if(!sens) set(xmax-sz/5,ymax-sz/6,- (1<<26)); else set(xmax-sz/5,ymax-sz/6, (1<<26));
-			//if(!sens) set(xmax+sz/6,ymax+sz/5,- (1<<26)); else set(xmax+sz/6,ymax+sz/5, (1<<26));
+			int valInit=1<<3;
+			//if(!sens) set(xmax-sz/5,ymax-sz/6,- (valInit)); else set(xmax-sz/5,ymax-sz/6, (valInit));
+			//if(!sens) set(xmax+sz/6,ymax+sz/5,- (valInit)); else set(xmax+sz/6,ymax+sz/5, (valInit));
 
-			set(xmax-sz/5,ymax-sz/6,- (1<<26));
+			//set(xmax-sz/12,ymax-sz/12,- (valInit));
+			//set(xmax+sz/12,ymax-sz/20, (valInit));
 
-			set(xmax+sz/6,ymax, (1<<26));
+			set(xmax,ymax, (valInit));
 		}
 		calcsimple(int sz) : sz(sz),dat(sz*sz),sec(sz*sz){
 
@@ -161,17 +167,18 @@ class calcsimple{
 			for( int i=0;i<sz*sz;i++) sec[i]=dat[i]; 
 			for(int x=1;x<sz-1;x++) for (int y=1;y<sz-1;y++){
 				int i=getOffset(x,y);
-				dat[i]=sec[i]&3;
+				int rest=sec[i]&7;
+				dat[i]=((sec[i]-rest)>>1) + rest;
 					
 				int up=getOffset(x,y+1);
 				int down=getOffset(x,y-1);	
 				int left=getOffset(x-1,y);
 				int right=getOffset(x+1,y);
 
-				dat[i]+=sec[up]>>2;
-				dat[i]+=sec[down]>>2;
-				dat[i]+=sec[left]>>2;
-				dat[i]+=sec[right]>>2;
+				dat[i]+=sec[up]>>3;
+				dat[i]+=sec[down]>>3;
+				dat[i]+=sec[left]>>3;
+				dat[i]+=sec[right]>>3;
 						
 			}			
 			//set(sz/2+100,sz/2,1<<30);
