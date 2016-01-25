@@ -109,7 +109,7 @@ class calcsimple{
 
 			return dat[y*sz + x];
 		}
-		const int zoom=3;
+		const int zoom=1;
 		int szy() { return sz*zoom;};
 		int szx() { return sz*zoom;};
 
@@ -223,11 +223,15 @@ int main(int argc, char* argv[]){
 //	display<calcsimple,rawPpm> dis(rs);
 	while(true) { 
 rs.mdo(1);
-if((++bouc) % 200==1 || (((bouc/1000)%5==1) && (bouc %1000 <200))){
+const int durRealTime=50;
+const int nbNormal=300;
+const int nbTotla=-1;//3500;//30000;
+const int cycleSlow=1000;
+if((++bouc) % nbNormal==0 || (((bouc/cycleSlow)%5==1) && (bouc %cycleSlow<durRealTime))){
 	cout << " " << bouc << "      " ;
 	rs.debug();
 	dis.paint();
-	if(bouc>30000) break;
+	if(nbTotla > -1 && bouc>nbTotla) break;
 }
  };
 
