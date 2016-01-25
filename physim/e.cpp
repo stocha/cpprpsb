@@ -6,7 +6,7 @@ using namespace physim;
 
 const bool loop=true;
 const int nbrayperimage=1;
-const int matsz=800;
+const int matsz=110;
 const int decimage=1800-matsz;
 const bool donuts_shape=true;
 const unsigned int maximage=0;//nbrayperimage*40;
@@ -109,7 +109,7 @@ class calcsimple{
 
 			return dat[y*sz + x];
 		}
-		const int zoom=1;
+		const int zoom=7;
 		int szy() { return sz*zoom;};
 		int szx() { return sz*zoom;};
 
@@ -223,11 +223,13 @@ int main(int argc, char* argv[]){
 	display<calcsimple,rawPpm> dis(rs);
 	while(true) { 
 rs.mdo(1);
-if((++bouc) % 200==1 || (((bouc/1000)%5==1) && (bouc %1000 <200))){
+const int nbNormal=1;
+const int nbTotla=3500;//30000;
+if((++bouc) % nbNormal==0 || (((bouc/1000)%5==1) && (bouc %1000 <200))){
 	cout << " " << bouc << "      " ;
 	rs.debug();
 	dis.paint();
-	if(bouc>30000) break;
+	if(bouc>nbTotla) break;
 }
  };
 
