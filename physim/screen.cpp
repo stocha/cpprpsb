@@ -32,7 +32,7 @@ using namespace rawscreen;
 void rawScreen::plot(int x, int y,unsigned int col){
 				// calculate the pixel's byte offset inside the buffer
 			// see the image above in the blog...
-			unsigned int pix_offset =(vinfo.xres-1-szx)*4+ (x <<2)+ y * finfo.line_length ;
+			unsigned int pix_offset =(vinfo.xres-1-szx)+ (x )+ y * (finfo.line_length>>2) ;
 
 			// now this is about the same as fbp[pix_offset] = value
 			*((int*)(fbp + pix_offset)) =col;
