@@ -69,7 +69,73 @@ unsigned int liss(int src2){
 template<int szx,int szy>
 class bitmap{
 	bitset<szx> bits[szy];	
+
 	
+	bitmap& set(int x, int y) {
+		bits[y][x]=true;
+		return this;
+	}
+	int	get(int x,int y) const{
+		return bits[y][x]?1:0;
+	}
+
+	bitmap& operator&=(const bitmap& it){
+		for(int i=0;i<szy;i++){
+			bits[i]&=it.bits[i];
+		}	
+		return this;
+	}
+	bitmap& operator|=(const bitmap& it){
+		for(int i=0;i<szy;i++){
+			bits[i]|=it.bits[i];
+		}	
+		return this;
+	}
+	bitmap& operator^=(const bitmap& it){
+		for(int i=0;i<szy;i++){
+			bits[i]^=it.bits[i];
+		}	
+		return this;
+	}
+	const bitmap shl(int v=1) const{
+		bitmap res;
+		for(int i=0;i<szy;i++) {
+			res.bits[i]=bits[i]<<v;
+		}
+		return res;
+	}
+
+	const bitmap shr(int v=1) const{
+		bitmap res;
+		for(int i=0;i<szy;i++){
+			res.bits[i]=bits[i]>>v;
+		}
+		return res;
+	}	
+	const bitmap rol(int v=1) const{
+		return this.shl(v) | this.shr(szx-v);	
+	}	
+	const bitmap ror(int v=1) const{
+		return this.shr(v) | this.shl(szx-v);	
+	}
+
+			
+	const bitmap operator&( const bitmap& b){
+		return bitmap(*this)&=b;
+	}
+
+	const bitmap operator^( const bitmap& b){
+		return bitmap(*this)^=b;
+	}
+
+	const bitmap operator|( const bitmap& b){
+		return bitmap(*this)|=b;
+	}
+	const bitmap rule30x(){
+		// p xor (q or r)
+		return (*this).ror() ^ ((*this) | (*this).rol());	
+	}
+
 };
 class calcsimple{
 	const int zoom=1;
