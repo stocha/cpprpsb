@@ -106,6 +106,14 @@ public :
 		return res;
 	}
 
+	const bitmap flip() const{
+		bitmap res;
+		for(int i=0;i<szy;i++){
+			res.bits[i]=~bits[i];
+		}
+		return res;
+	}	
+
 	const bitmap shr(int v=1) const{
 		bitmap res;
 		for(int i=0;i<szy;i++){
@@ -164,6 +172,11 @@ public :
 		// p xor (q or r)
 		return (*this).ror() ^ ((*this) | (*this).rol());	
 	}
+	const bitmap rule45x() const{
+		// p xor (q or r)
+		return (*this).ror() ^ ((*this) | (*this).rol().flip());	
+	}
+
 	const bitmap rule30y() const{
 		// p xor (q or r)
 		return (*this).rod() ^ ((*this) | (*this).rou());	
@@ -186,7 +199,7 @@ public :
 
 };
 class calcsimple{
-	const int dir=3;
+	const int dir=4;
 	const int zoom=1;
 	bitmap<matsz,matsz> dat;
 public :
@@ -200,6 +213,7 @@ public :
 	if(dir==1) dat.set(matsz/2,0); // down 
 	if(dir==2) dat.set(matsz-1,matsz/2); // left
 	if(dir==3) dat.set(0,matsz/2); // right 
+	if(dir==4) dat.set(matsz/2,matsz/2);
 	}
 
 	void doit(){
@@ -220,8 +234,13 @@ public :
 			auto u=dat.shl();
 			dat=u.copyCol(0,dat.rule30y(),1);
 		}
+		if(dir==4){
+			dat=dat.rule30y()^dat.rule45x();
 
-	};
+		}
+
+	}
+
 	void debug(){cout << endl;};
 };
 	
@@ -236,8 +255,8 @@ int main(int argc, char* argv[]){
 		rs.doit();
 		const int durRealTime=50;
 		const int nbNormal=1;
-		const int nbTotla=matsz;//3500;//30000;
-		const int cycleSlow=1000;
+		const int nbTotla=-1;//matsz;//3500;//30000;
+		const int cycleSlow=10000;
 		if((++bouc) % nbNormal==0 || (((bouc/cycleSlow)%5==1) && (bouc %cycleSlow<durRealTime))){
 			cout << " " << bouc << "      " ;
 			rs.debug();
