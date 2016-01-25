@@ -7,7 +7,7 @@ using namespace physim;
 
 const bool loop=true;
 const int nbrayperimage=1;
-const int matsz=600;
+const int matsz=800;
 const int decimage=1800-matsz;
 const bool donuts_shape=false;//true;
 const unsigned int maximage=0;//nbrayperimage*40;
@@ -68,12 +68,13 @@ unsigned int liss(int src2){
 }
 template<int szx,int szy>
 class bitmap{
+	
 	bitset<szx> bits[szy];	
-
+public :
 	
 	bitmap& set(int x, int y) {
 		bits[y][x]=true;
-		return this;
+		return (*this);
 	}
 	int	get(int x,int y) const{
 		return bits[y][x]?1:0;
@@ -83,19 +84,19 @@ class bitmap{
 		for(int i=0;i<szy;i++){
 			bits[i]&=it.bits[i];
 		}	
-		return this;
+		return (*this);
 	}
 	bitmap& operator|=(const bitmap& it){
 		for(int i=0;i<szy;i++){
 			bits[i]|=it.bits[i];
 		}	
-		return this;
+		return (*this);
 	}
 	bitmap& operator^=(const bitmap& it){
 		for(int i=0;i<szy;i++){
 			bits[i]^=it.bits[i];
 		}	
-		return this;
+		return (*this);
 	}
 	const bitmap shl(int v=1) const{
 		bitmap res;
@@ -112,41 +113,76 @@ class bitmap{
 		}
 		return res;
 	}	
+	const bitmap shu(int v=1) const{
+		bitmap res;
+		for(int i=0;i<szy-v;++i){
+			res.bits[i]=bits[i+v];
+		}
+		for(int i=szy-v;i<szy;++i){
+			res.bits[i]=0;
+		}
+		return res;
+	}
+	const bitmap shd(int v=1) const{
+		bitmap res;
+		for(int i=szy-1;i>=v;--i){
+			res.bits[i]=bits[i-v];
+		}
+		for(int i=szy-v;i<szy;++i){
+			res.bits[i]=0;
+		}
+		return res;
+	}
+		
 	const bitmap rol(int v=1) const{
-		return this.shl(v) | this.shr(szx-v);	
+		return shl(v) | shr(szx-v);	
 	}	
 	const bitmap ror(int v=1) const{
-		return this.shr(v) | this.shl(szx-v);	
+		return shr(v) | shl(szx-v);	
 	}
 
 			
-	const bitmap operator&( const bitmap& b){
+	const bitmap operator&( const bitmap& b) const{
 		return bitmap(*this)&=b;
 	}
 
-	const bitmap operator^( const bitmap& b){
+	const bitmap operator^( const bitmap& b) const{
 		return bitmap(*this)^=b;
 	}
 
-	const bitmap operator|( const bitmap& b){
+	const bitmap operator|( const bitmap& b) const{
 		return bitmap(*this)|=b;
 	}
-	const bitmap rule30x(){
+	const bitmap rule30x() const{
 		// p xor (q or r)
 		return (*this).ror() ^ ((*this) | (*this).rol());	
+	}
+	const bitmap copyLine(int dst,const bitmap& srcb,int src)const {
+		bitmap res;
+		res=(*this);
+		res.bits[dst]=srcb.bits[src];
+		return res;
 	}
 
 };
 class calcsimple{
 	const int zoom=1;
+	bitmap<matsz,matsz> dat;
 public :
 	int szx(){return matsz*zoom;}
 	int szy(){return matsz*zoom;}
-	unsigned int col(int x, int y){return 0;};
+	unsigned int col(int x, int y){return dat.get(x/zoom,y/zoom)*255;};
 		
+	calcsimple(){
+		dat^=dat;
+		dat.set(matsz/2,matsz-1);
+	}
 
-	void doit(){};
-	void debug(){};
+	void doit(){
+		auto u=dat.shu();
+		dat=u.copyLine(matsz-1,dat.rule30x(),matsz-2);
+	};
+	void debug(){cout << endl;};
 };
 	
 
@@ -160,7 +196,7 @@ int main(int argc, char* argv[]){
 		rs.doit();
 		const int durRealTime=50;
 		const int nbNormal=1;
-		const int nbTotla=-1;//3500;//30000;
+		const int nbTotla=matsz;//3500;//30000;
 		const int cycleSlow=1000;
 		if((++bouc) % nbNormal==0 || (((bouc/cycleSlow)%5==1) && (bouc %cycleSlow<durRealTime))){
 			cout << " " << bouc << "      " ;
