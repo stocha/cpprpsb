@@ -133,13 +133,20 @@ public :
 		}
 		return res;
 	}
-		
+	
 	const bitmap rol(int v=1) const{
 		return shl(v) | shr(szx-v);	
 	}	
 	const bitmap ror(int v=1) const{
 		return shr(v) | shl(szx-v);	
 	}
+	const bitmap rou(int v=1) const{
+		return shu(v) | shd(szx-v);	
+	}	
+	const bitmap rod(int v=1) const{
+		return shd(v) | shu(szx-v);	
+	}
+
 
 			
 	const bitmap operator&( const bitmap& b) const{
@@ -157,10 +164,23 @@ public :
 		// p xor (q or r)
 		return (*this).ror() ^ ((*this) | (*this).rol());	
 	}
+	const bitmap rule30y() const{
+		// p xor (q or r)
+		return (*this).rod() ^ ((*this) | (*this).rou());	
+	}
 	const bitmap copyLine(int dst,const bitmap& srcb,int src)const {
 		bitmap res;
 		res=(*this);
 		res.bits[dst]=srcb.bits[src];
+		return res;
+	}
+	const bitmap copyCol(int dst,const bitmap& srcb,int src) const{
+		bitmap res;
+		res=(*this);
+		for(int i=0;i<szy;i++){
+			bool v=srcb.bits[i][src];
+			res.bits[i][dst]=v;
+		}
 		return res;
 	}
 
@@ -175,12 +195,15 @@ public :
 		
 	calcsimple(){
 		dat^=dat;
-		dat.set(matsz/2,matsz-1);
+//		dat.set(matsz/2,matsz-1);
+		dat.set(matsz-1,matsz/2);
 	}
 
 	void doit(){
-		auto u=dat.shu();
-		dat=u.copyLine(matsz-1,dat.rule30x(),matsz-2);
+		//auto u=dat.shu();
+		//dat=u.copyLine(matsz-1,dat.rule30x(),matsz-2);
+		auto u=dat.shr();
+		dat=u.copyCol(matsz-1,dat.rule30y(),matsz-2);
 	};
 	void debug(){cout << endl;};
 };
