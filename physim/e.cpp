@@ -186,6 +186,7 @@ public :
 
 };
 class calcsimple{
+	const int dir=3;
 	const int zoom=1;
 	bitmap<matsz,matsz> dat;
 public :
@@ -195,15 +196,31 @@ public :
 		
 	calcsimple(){
 		dat^=dat;
-//		dat.set(matsz/2,matsz-1);
-		dat.set(matsz-1,matsz/2);
+	if(dir==0) dat.set(matsz/2,matsz-1); // up
+	if(dir==1) dat.set(matsz/2,0); // down 
+	if(dir==2) dat.set(matsz-1,matsz/2); // left
+	if(dir==3) dat.set(0,matsz/2); // right 
 	}
 
 	void doit(){
-		//auto u=dat.shu();
-		//dat=u.copyLine(matsz-1,dat.rule30x(),matsz-2);
-		auto u=dat.shr();
-		dat=u.copyCol(matsz-1,dat.rule30y(),matsz-2);
+		if(dir==0){
+			auto u=dat.shu();
+			dat=u.copyLine(matsz-1,dat.rule30x(),matsz-2);
+		}
+		if(dir==1){
+			auto u=dat.shd();
+			dat=u.copyLine(0,dat.rule30x(),1);
+		}
+
+		if(dir==2){
+			auto u=dat.shr();
+			dat=u.copyCol(matsz-1,dat.rule30y(),matsz-2);
+		}
+		if(dir==3){
+			auto u=dat.shl();
+			dat=u.copyCol(0,dat.rule30y(),1);
+		}
+
 	};
 	void debug(){cout << endl;};
 };
