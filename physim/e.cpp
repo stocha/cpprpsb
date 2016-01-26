@@ -136,7 +136,7 @@ public :
 		for(int i=szy-1;i>=v;--i){
 			res.bits[i]=bits[i-v];
 		}
-		for(int i=szy-v;i<szy;++i){
+		for(int i=v-1;i>=0;--i){
 			res.bits[i]=0;
 		}
 		return res;
@@ -174,7 +174,7 @@ public :
 	}
 	const bitmap rule45x() const{
 		// p xor (q or r)
-		return (*this).ror() ^ ((*this) | (*this).rol().flip());	
+		return (*this).ror(13) ^ ((*this).ror(3) ^ (*this).ror(7));	
 	}
 
 	const bitmap rule30y() const{
@@ -205,7 +205,7 @@ class calcsimple{
 public :
 	int szx(){return matsz*zoom;}
 	int szy(){return matsz*zoom;}
-	unsigned int col(int x, int y){return dat.get(x/zoom,y/zoom)*255;};
+	unsigned int col(int x, int y){return ((dat.get(x/zoom,y/zoom)<<8)+1)*255;};
 		
 	calcsimple(){
 		dat^=dat;
@@ -235,7 +235,7 @@ public :
 			dat=u.copyCol(0,dat.rule30y(),1);
 		}
 		if(dir==4){
-			dat=dat.rule30y()^dat.rule45x();
+			dat=dat.rule45x()^dat.rule30y();
 
 		}
 
@@ -254,7 +254,7 @@ int main(int argc, char* argv[]){
 	while(true) { 
 		rs.doit();
 		const int durRealTime=50;
-		const int nbNormal=1;
+		const int nbNormal=10;
 		const int nbTotla=-1;//matsz;//3500;//30000;
 		const int cycleSlow=10000;
 		if((++bouc) % nbNormal==0 || (((bouc/cycleSlow)%5==1) && (bouc %cycleSlow<durRealTime))){

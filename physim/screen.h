@@ -23,7 +23,7 @@ namespace physim{
 
 				void paint(){
 					for(int i=0;i<src.szx();++i) for(int j=0;j<src.szy();++j){
-						g.plot(i,j,src.col(i,j));
+						g.plot(j,i,src.col(j,i));
 					}
 					g.paint();	
 				}	
