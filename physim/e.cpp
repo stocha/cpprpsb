@@ -15,9 +15,10 @@ public :
 	order4() : dat(2){
 		dat.clear();
 		dat.set(matsz/2,matsz/2,1);
-		for(int i=0;i<2048;i++){
+		for(int i=0;i<matsz;i++){
 			dat.randomize();
 		}
+		cout << "Randomized" << endl;
 	}
 
 	const bitmap<matsz,matsz> doit(bitmap<matsz,matsz> input){
@@ -40,7 +41,7 @@ public :
 };
 
 class calcsimple{
-	const int zoom=4;
+	const int zoom=6;
 	
 	order4 order;
 	bitmap<matsz,matsz> bm;
@@ -84,10 +85,10 @@ int main(int argc, char* argv[]){
 	while(true) { 
 		rs.doit();
 		const int durRealTime=50;
-		const int nbNormal=1;
+		const int nbNormal=100;
 		const int nbTotla=-1;//matsz;//3500;//30000;
-		const int cycleSlow=10000;
-		if((++bouc) % nbNormal==0 || (((bouc/cycleSlow)%5==1) && (bouc %cycleSlow<durRealTime))){
+		const int cycleSlow=5000;
+		if(((++bouc) % nbNormal==0 ) || (bouc %cycleSlow<durRealTime)){
 			cout << " " << bouc << "      " ;
 			rs.debug();
 			dis.paint();
