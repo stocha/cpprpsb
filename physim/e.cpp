@@ -6,8 +6,8 @@
 using namespace std;
 using namespace physim;
 
-const int matsz=32;
-const int nblayer=16*8*4;
+const int matsz=64;
+const int nblayer=16*8;
 // application entry point
 class order4{
 	bitstack<matsz,matsz> dat;
@@ -49,13 +49,15 @@ public :
 	}
 	unsigned int get(int px, int py){
 		int raw=dat.getsum(px,py);
-		const int nbLevel=4;
-		const int mult=(255/(nbLevel));
+		const int nbLevel=8;
+		const int mult=(255/(nbLevel*2));
 		if(raw==0) return 0;
-		if(raw<nbLevel) return ((raw)*mult) << 16;
-		if(raw<nbLevel*2) return( (raw-nbLevel)*mult)<< 8;
-		if(raw<nbLevel*3) return ((raw-nbLevel)*mult) ;
-		return 0xFFFFFF;
+		int col= ((raw+(nbLevel/2))*mult);
+		if(col<255) return col/2|(col<<8)|(col/2<<16);
+		//if(raw<nbLevel) return ((raw)*mult) << 16;
+		//if(raw<nbLevel*2) return( (raw-nbLevel)*mult)<< 8;
+		//if(raw<nbLevel*3) return ((raw-nbLevel)*mult) ;
+		return 0x7FFF7F;
 	}
 	
 
@@ -63,7 +65,7 @@ public :
 
 	
 class calcsimple{
-	const int zoom=6;
+	const int zoom=4;
 	
 	order4 order;
 	bitmap<matsz,matsz> bm;
@@ -116,7 +118,7 @@ int main(int argc, char* argv[]){
 	while(true) { 
 		rs.doit();
 		const int durRealTime=0;
-		const int nbNormal=8;
+		const int nbNormal=4;
 		const int nbTotla=-1;//matsz;//3500;//30000;
 		const int cycleSlow=5000;
 		if(((++bouc) % nbNormal==0 ) || (bouc %cycleSlow<durRealTime)){
