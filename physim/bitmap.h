@@ -95,6 +95,9 @@ public :
 
 
 			
+	const bitmap operator~() const{
+		return bitmap(*this).flip();
+	}
 	const bitmap operator&( const bitmap& b) const{
 		return bitmap(*this)&=b;
 	}
@@ -142,6 +145,7 @@ class bitstack{
 	std::vector<bitmap<szx,szy>> d;
 public :
 	bitstack(int sz) : d(sz){}
+	bitmap<szx,szy> getmap(int i) { return d[i]; }
 	void clear(){
 		for(int i=0;i<d.size();++i){
 			d[i]^=d[i];
