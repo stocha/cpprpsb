@@ -6,7 +6,8 @@
 using namespace std;
 using namespace physim;
 
-const int matsz=128;
+const int matsz=32;
+const int nblayer=16*8*4;
 // application entry point
 class order4{
 	bitstack<matsz,matsz> dat;
@@ -39,12 +40,35 @@ public :
 	}
 
 };
+class loglay{
+	bitstack<matsz,matsz> dat;
+public :
+	loglay() : dat(nblayer){dat.clear();};
+	void push(bitmap<matsz,matsz> arg){
+		dat.push(arg);	
+	}
+	unsigned int get(int px, int py){
+		int raw=dat.getsum(px,py);
+		const int nbLevel=4;
+		const int mult=(255/(nbLevel));
+		if(raw==0) return 0;
+		if(raw<nbLevel) return ((raw)*mult) << 16;
+		if(raw<nbLevel*2) return( (raw-nbLevel)*mult)<< 8;
+		if(raw<nbLevel*3) return ((raw-nbLevel)*mult) ;
+		return 0xFFFFFF;
+	}
+	
 
+};
+
+	
 class calcsimple{
 	const int zoom=6;
 	
 	order4 order;
 	bitmap<matsz,matsz> bm;
+	loglay log;
+
 public :
 	int szx(){return matsz*zoom;}
 	int szy(){return matsz*zoom;}
@@ -56,6 +80,8 @@ public :
 		int v= ((1&(val>>1)) * 255);
 		int b= ((1&(val>>2)) * 255);
 			
+
+		return log.get(x,y);
 		{if(val==0) return 255; else return 255<<8;}
 		//if(dir!=4) return r|(v<<8)|(b<<16);
 		//return val;
@@ -70,6 +96,7 @@ public :
 	void doit(){
 		bm=order.doit(bm);	
 
+		log.push(bm);
 	}
 
 	void debug(){cout << endl;};
@@ -82,10 +109,14 @@ int main(int argc, char* argv[]){
 	calcsimple rs;
 	display<calcsimple,rawScreen> dis(rs);
 //	display<calcsimple,rawPpm> dis(rs);
+	int initphase=nblayer;
+	for(int i=0;i<initphase;++i){
+		rs.doit();
+	}
 	while(true) { 
 		rs.doit();
-		const int durRealTime=50;
-		const int nbNormal=100;
+		const int durRealTime=0;
+		const int nbNormal=8;
 		const int nbTotla=-1;//matsz;//3500;//30000;
 		const int cycleSlow=5000;
 		if(((++bouc) % nbNormal==0 ) || (bouc %cycleSlow<durRealTime)){

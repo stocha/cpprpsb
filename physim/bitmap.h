@@ -167,13 +167,38 @@ public :
 		}
 		return res;
 	}
+	unsigned long getsum(int x,int y) const{
+		int sz=d.size();
+		unsigned long res=0;
+		for(int i=sz-1;i>=0;--i){
+			res=res+d[i].get(x,y);	
+		}
+		return res;
+	}
 	void set(int x,int y, unsigned int value){
 		unsigned int v=value;
 		for(int i=0;i<d.size();++i){
 			if(v&1) d[i].set(x,y,1);
 			v=v>>1;
 		}
-
+	}
+	void shy0(int v=1){
+		int sz=d.size();
+		for(int i=0;i<sz-v;++i){
+			d[i]=d[i+v];
+		}
+		for(int i=sz-v;i<sz;++i){
+			d[i]^=d[i];
+		}
+	}
+	void setat(bitmap<szx,szy> arg, int at){
+		d[at]=arg;
+	}
+	int size() { return d.size();}
+	void push(bitmap<szx,szy> arg){
+		shy0();
+		setat(arg,d.size()-1);	
+		
 	}
 };
 
