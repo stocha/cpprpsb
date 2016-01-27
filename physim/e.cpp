@@ -17,7 +17,7 @@ public :
 	int getszx() { return szx;}
 	int getszy() { return szy;}
 	
-	bitmap& set(int x, int y) {
+	bitmap& set(int x, int y,unsigned int v) {
 		bits[y][x]=true;
 		return (*this);
 	}
@@ -173,14 +173,14 @@ public :
 	void set(int x,int y, unsigned int value){
 		unsigned int v=value;
 		for(int i=0;i<d.size();++i){
-			if(v&1) d[i].set(x,y);
+			if(v&1) d[i].set(x,y,1);
 			v=v>>1;
 		}
 
 	}
 };
 class calcsimple{
-	const int dir=4;
+	const int dir=3;
 	const int zoom=1;
 	bitstack<matsz,matsz> dat;
 	bitmap<matsz,matsz> bm;
@@ -191,21 +191,23 @@ public :
 		int x=px/zoom;
 		int y=py/zoom;
 		int val=dat.get(x,y);
+		if(dir!=4) val=bm.get(x,y);
 		int r=(val&1) * 255;
 		int v= ((1&(val>>1)) * 255);
 		int b= ((1&(val>>2)) * 255);
 			
-		//return r|(v<<8)|(b<<16);
+		//if(dir==3 ) {if(val==0) return 255; else return 255<<8;}
+		if(dir!=4) return r|(v<<8)|(b<<16);
 		return val;
 	}
 		
 	calcsimple(): dat(24){
 		dat.clear();
 		bm^=bm;
-		if(dir==0) bm.set(matsz/2,matsz-1); // up
-		if(dir==1) bm.set(matsz/2,0); // down 
-		if(dir==2) bm.set(matsz-1,matsz/2); // left
-		if(dir==3) bm.set(0,matsz/2); // right 
+		if(dir==0) bm.set(matsz/2,matsz-1,1); // up
+		if(dir==1) bm.set(matsz/2,0,1); // down 
+		if(dir==2) bm.set(matsz-1,matsz/2,1); // left
+		if(dir==3) bm.set(0,matsz/2,1); // right 
 		if(dir==4) dat.set(matsz/2,matsz/2,1);
 	}
 
@@ -215,17 +217,17 @@ public :
 			bm=u.copyLine(matsz-1,bm.rule30x(),matsz-2);
 		}
 		if(dir==1){
-			//auto u=bm.shd();
-			//bm=u.copyLine(0,bm.rule30x(),1);
+			auto u=bm.shd();
+			bm=u.copyLine(0,bm.rule30x(),1);
 		}
 
 		if(dir==2){
-			//auto u=bm.shr();
-			//bm=u.copyCol(matsz-1,bm.rule30y(),matsz-2);
+			auto u=bm.shr();
+			bm=u.copyCol(matsz-1,bm.rule30y(),matsz-2);
 		}
 		if(dir==3){
-			//auto u=bm.shl();
-			//bm=u.copyCol(0,bm.rule30y(),1);
+			auto u=bm.shl();
+			bm=u.copyCol(0,bm.rule30y(),1);
 		}
 		if(dir==4){
 			dat.randomize();
@@ -246,7 +248,7 @@ int main(int argc, char* argv[]){
 	while(true) { 
 		rs.doit();
 		const int durRealTime=50;
-		const int nbNormal=10;
+		const int nbNormal=1;
 		const int nbTotla=-1;//matsz;//3500;//30000;
 		const int cycleSlow=10000;
 		if((++bouc) % nbNormal==0 || (((bouc/cycleSlow)%5==1) && (bouc %cycleSlow<durRealTime))){
