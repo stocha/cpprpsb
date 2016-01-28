@@ -7,7 +7,7 @@ using namespace std;
 using namespace physim;
 
 const int matsz=32*2;
-const int nblayer=16*8*4;
+const int nblayer=16*8*4*2;
 // application entry point
 class order4{
 	bitstack<matsz,matsz> dat;
@@ -69,23 +69,24 @@ public :
 				 break;
 			}
 			
+			++colind;
 		}
 		switch(colind) {
 			case 0 :
 				return pix(intens,0,0);
 			break;
 			case 1 :
-				return pix(255-intens,intens,intens);
+				return pix(255,intens,0);
 			break;
 			case 2 :
-				return pix(intens,255,255);
+				return pix(255,255,intens);
 			break;
 		
 			default :
-				return 0x7F7FFF;
+				return pix(255,255,255);
 			
 		}	
-		return 0x7FFF7F;
+		return 0x0;
 	}
 	
 
