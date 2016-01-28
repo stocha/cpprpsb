@@ -57,9 +57,9 @@ void rawPpm::paint(){
 	for(int i=0;i<szx;++i){
 		for (int j=0;j<szy;++j) {
 			int col=colDat[i+j*szx];
-			int r=col&255;
+			int b=col&255;
 			int v=(col>>8) & 255;
-			int b=(col>>16)&255;
+			int r=(col>>16)&255;
 			os << r << " " << v << " " << b << " ";
 
 
