@@ -86,25 +86,20 @@ public :
 				return pix(255,127+(intens>>1),0);
 			break;
 		
-			case 3 :
-				return pix(255,255,intens>>2);
-			break;
-			
-			case 4 :
-				return pix(255,255,(0xFF/4)+(intens>>2));
-			break;
-			
-			case 5 :
-				return pix(255,255,(2*0xFF/4)+(intens>>2));
-			break;
-			
-			case 6 :
-				return pix(255,255,(3*0xFF/4)+(intens>>2));
-			break;
-
-
 			default :
-				return pix(0,0,255);
+				if(colind<8   +3){	
+					intens=raw - 3*256;
+					return pix(255,255,intens>>3);
+				}else
+		//		if(colind<16  +8+3){	
+		//			intens=raw - (8+3)*256;
+		//			return pix(255-(intens>>5),255-(intens>>5),intens>>4);
+		//		}
+			//	else
+	
+				{
+					return pix(255,255,255);
+				}
 				
 		}	
 		return 0x0;
