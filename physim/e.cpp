@@ -53,7 +53,7 @@ public :
 		dat.push(arg);	
 	}
 	unsigned int get(int px, int py){
-		int raw=dat.getsum(px,py);
+		const int raw=dat.getsum(px,py);
 		const int nbLevel=255;
 		const int subLevelFull=1;
 		const int mult=1;//(255/(nbLevel*subLeveFull));
@@ -63,7 +63,7 @@ public :
 		//if(col<255) return col/2|(col<<8)|(col/2<<16);
 		int intens=0;
 		int colind=0;
-		for (int i=0;i<4;i++){
+		for (int i=0;i<7;i++){
 			if(raw<nbLevel*(i+1)){
 				 intens= ((raw-nbLevel*i)*mult) ;
 				 colind=i;
@@ -72,23 +72,40 @@ public :
 			
 			++colind;
 		}
+		colind =raw/256;
+		intens=raw - colind*256;
 		switch(colind) {
 			case 0 :
 				return pix(intens,0,0);
 			break;
 			case 1 :
-				return pix(255,intens,0);
-			break;
-			case 2 :
-				return pix(255,255,intens);
-			break;
-			case 3 :
-				return pix(255-intens/2,255-intens/2,intens);
+				return pix(255,intens>>1,0);
 			break;
 		
-			default :
-				return pix(255/2,255/2,255);
+			case 2 :
+				return pix(255,127+(intens>>1),0);
+			break;
+		
+			case 3 :
+				return pix(255,255,intens>>2);
+			break;
 			
+			case 4 :
+				return pix(255,255,(0xFF/4)+(intens>>2));
+			break;
+			
+			case 5 :
+				return pix(255,255,(2*0xFF/4)+(intens>>2));
+			break;
+			
+			case 6 :
+				return pix(255,255,(3*0xFF/4)+(intens>>2));
+			break;
+
+
+			default :
+				return pix(0,0,255);
+				
 		}	
 		return 0x0;
 	}
@@ -98,7 +115,7 @@ public :
 
 	
 class calcsimple{
-	const int zoom=1;
+	const int zoom=10;
 	
 	order4 order;
 	bitmap<matsz,matsz> bm;
@@ -154,24 +171,29 @@ public :
 int main(int argc, char* argv[]){
 	int bouc=0;
 	calcsimple rs;
-	display<calcsimple,rawScreen> dis(rs);
-//	display<calcsimple,rawPpm> dis(rs);
+//	display<calcsimple,rawScreen> dis(rs);
+	display<calcsimple,rawPpm> dis(rs);
 	int initphase=nblayer;
 	for(int i=0;i<initphase;++i){
 		rs.doit();
 	}
+	int im=0;
 	while(true) { 
 		rs.doit();
 		const int durRealTime=0;
 		const int nbNormal=nblayer/5;
 		const int nbTotla=-1;//matsz;//3500;//30000;
 		const int cycleSlow=5000;
+	
 		if(((++bouc) % nbNormal==0 ) || (bouc %cycleSlow<durRealTime)){
 			cout << " " << bouc << "      " ;
 			rs.debug();
 			dis.paint();
 			if(nbTotla > -1 && bouc>nbTotla) break;
+		
+			++im;
 		}
+		if(im>2500) break;
 	};
 
 
