@@ -7,7 +7,7 @@ using namespace std;
 using namespace physim;
 
 const int matsz=32*2;
-const int nblayer=16*8*4*2;
+const int nblayer=16*64*8;
 // application entry point
 class order4{
 	bitstack<matsz,matsz> dat;
@@ -31,10 +31,10 @@ public :
 		auto r=m0&~m1;
 		auto l=m0&m1;
 	
-		auto res=(u & input).rou();
-		res|=(d & input).rod();
-		res|=(r & input).rol();
-		res|=(l & input).ror();
+		auto res=(u & input).shu();
+		res|=(d & input).shd();
+		res|=(r & input).shl();
+		res|=(l & input).shr();
 		//res|=(input & ~ u & ~d);
 		return res;
 	}
@@ -58,6 +58,7 @@ public :
 		const int subLevelFull=1;
 		const int mult=1;//(255/(nbLevel*subLeveFull));
 		if(raw==0) return 0;
+		//return 0xFFFFFF;
 		int col= ((raw+(nbLevel/subLevelFull))*mult);
 		//if(col<255) return col/2|(col<<8)|(col/2<<16);
 		int intens=0;
@@ -81,9 +82,12 @@ public :
 			case 2 :
 				return pix(255,255,intens);
 			break;
+			case 3 :
+				return pix(255-intens/2,255-intens/2,intens);
+			break;
 		
 			default :
-				return pix(255,255,255);
+				return pix(255/2,255/2,255);
 			
 		}	
 		return 0x0;
@@ -120,8 +124,9 @@ public :
 		
 	calcsimple(){
 		bm^=bm;
-		//bm.set(matsz/2,matsz/2,1);
-		bm=bm.flip();
+		bm.set(matsz/2,matsz/2,1);
+		return;
+		//bm=bm.flip();
 		for(int i=0;i<1000;i++){
 			bm=order.doit(bm);
 		}
@@ -158,7 +163,7 @@ int main(int argc, char* argv[]){
 	while(true) { 
 		rs.doit();
 		const int durRealTime=0;
-		const int nbNormal=10*3*2;
+		const int nbNormal=nblayer/5;
 		const int nbTotla=-1;//matsz;//3500;//30000;
 		const int cycleSlow=5000;
 		if(((++bouc) % nbNormal==0 ) || (bouc %cycleSlow<durRealTime)){
