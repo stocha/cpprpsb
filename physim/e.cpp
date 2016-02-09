@@ -6,7 +6,7 @@
 using namespace std;
 using namespace physim;
 
-const int matsz=128*5;
+const int matsz=128*6;
 const int nblayer=1;
 // application entry point
 class order4{
@@ -165,9 +165,10 @@ public :
 
 int main(int argc, char* argv[]){
 	int bouc=0;
+	int done=0;
 	calcsimple rs;
-	display<calcsimple,rawScreen> dis(rs);
-//	display<calcsimple,rawPpm> dis(rs);
+//	display<calcsimple,rawScreen> dis(rs);
+	display<calcsimple,rawPpm> dis(rs);
 	int initphase=nblayer;
 	for(int i=0;i<initphase;++i){
 		rs.doit();
@@ -175,14 +176,16 @@ int main(int argc, char* argv[]){
 	while(true) { 
 		rs.doit();
 		const int durRealTime=0;
-		const int nbNormal=1;
+		const int nbNormal=2;
 		const int nbTotla=-1;//matsz;//3500;//30000;
 		const int cycleSlow=5000;
 		if(((++bouc) % nbNormal==0 ) || (bouc %cycleSlow<durRealTime)){
 			cout << " " << bouc << "      " ;
 			rs.debug();
 			dis.paint();
+			++done;
 			if(nbTotla > -1 && bouc>nbTotla) break;
+			if(done > 1500) break;
 		}
 	};
 
