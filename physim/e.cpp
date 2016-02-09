@@ -6,7 +6,7 @@
 using namespace std;
 using namespace physim;
 
-const int matsz=128*3;
+const int matsz=128*5;
 const int nblayer=1;
 // application entry point
 class order4{
@@ -110,8 +110,13 @@ class calcsimple{
 	
 	order4 order;
 	bitmap<matsz,matsz> bm;
+	bitmap<matsz,matsz> floc;
 	loglay log;
 
+	bitmap<matsz,matsz> scramble(bitmap<matsz,matsz> input){
+		return input|input.xxu()|input.xxd()|input.xxr()|input.xxl();
+		
+	}
 public :
 	int szx(){return matsz*zoom;}
 	int szy(){return matsz*zoom;}
@@ -132,18 +137,25 @@ public :
 		
 	calcsimple(){
 		bm^=bm;
-		//bm.set(matsz/2,matsz/2,1);
 		bm=bm.flip();
 		bm&=order.rand();
 		bm&=order.rand();
-		bm&=order.rand();
-		bm&=order.rand();
+//		bm&=order.rand();
+
+		floc^=floc;
+		
+		floc.set(matsz/2,matsz/2,1);
+		
 	}
 
 	void doit(){
 		bm=order.doit(bm);	
+		
+		auto sc=scramble(floc);
+		floc|=sc&bm;
+		bm&=~floc;
 
-		log.push(bm);
+		log.push(bm | floc);
 	}
 
 	void debug(){cout << endl;};
@@ -163,7 +175,7 @@ int main(int argc, char* argv[]){
 	while(true) { 
 		rs.doit();
 		const int durRealTime=0;
-		const int nbNormal=4;
+		const int nbNormal=1;
 		const int nbTotla=-1;//matsz;//3500;//30000;
 		const int cycleSlow=5000;
 		if(((++bouc) % nbNormal==0 ) || (bouc %cycleSlow<durRealTime)){
