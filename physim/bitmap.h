@@ -80,21 +80,36 @@ public :
 		return res;
 	}
 	
-	const bitmap rol(int v=1) const{
+	const bitmap rol(const int v=1) const{
 		return shl(v) | shr(szx-v);	
 	}	
-	const bitmap ror(int v=1) const{
+	const bitmap ror(const int v=1) const{
 		return shr(v) | shl(szx-v);	
 	}
-	const bitmap rou(int v=1) const{
+	const bitmap rou(const int v=1) const{
 		return shu(v) | shd(szx-v);	
 	}	
-	const bitmap rod(int v=1) const{
+	const bitmap rod(const int v=1) const{
 		return shd(v) | shu(szx-v);	
 	}
 
 
-			
+	const bitmap xxl(const int loop=1, const int v=1) const{
+		return loop?rol(v):shl(v);
+	}
+	
+	const bitmap xxr(const int loop=1, const int v=1) const{
+		return loop?ror(v):shr(v);
+	}
+	
+	const bitmap xxu(const int loop=1, const int v=1) const{
+		return loop?rou(v):shu(v);
+	}
+	
+	const bitmap xxd(const int loop=1, const int v=1) const{
+		return loop?rod(v):shd(v);
+	}
+
 	const bitmap operator~() const{
 		return bitmap(*this).flip();
 	}
