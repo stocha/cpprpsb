@@ -30,14 +30,56 @@ public :
 		auto d=~m0&m1;
 		auto r=m0&~m1;
 		auto l=m0&m1;
+
+		u&=(~input).xxd();
+		d&=(~input).xxu();
+		l&=(~input).xxr();
+		r&=(~input).xxl();
 	
-		auto res=(u & input).xxu();
-		res|=(d & input).xxd();
-		res|=(r & input).xxl();
-		res|=(l & input).xxr();
+//		u&=(~input).xxd().xxd();
+//		d&=(~input).xxu().xxu();
+//		l&=(~input).xxr().xxr();
+//		r&=(~input).xxl().xxl();
+
+		auto xu=(u & input).xxu();
+		auto xd=(d & input).xxd();
+		auto xl=(l & input).xxl();
+		auto xr=(r & input).xxr();
+
+		auto coli= (xu&xd) | (xu & xr) | (xu & xl);
+		coli|= (xd&xr) | (xd&xl);
+		coli|= (xl&xr);
+		coli=~coli;
+	
+		u&=coli.xxd();
+		d&=coli.xxu();
+		l&=coli.xxr();
+		r&=coli.xxl();
+
+
+		auto imm=input & (~u) & (~d) & (~l) & (~r) ;
+		
+
+		xu=(u & input).xxu();
+		xd=(d & input).xxd();
+		xl=(l & input).xxl();
+		xr=(r & input).xxr();
+
+
+
+
+		auto res=xu;
+		res|=xd;
+		res|=xr;
+		res|=xl;
+		res|=imm;
 		return res;
 	}
 
+	const bitmap<matsz,matsz> rand(){
+		dat.randomize();
+		return dat.getmap(0);
+	}
 };
 class loglay{
 	bitstack<matsz,matsz> dat;
@@ -92,6 +134,10 @@ public :
 		bm^=bm;
 		//bm.set(matsz/2,matsz/2,1);
 		bm=bm.flip();
+		bm&=order.rand();
+		bm&=order.rand();
+		bm&=order.rand();
+		bm&=order.rand();
 	}
 
 	void doit(){
