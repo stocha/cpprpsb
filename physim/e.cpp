@@ -6,7 +6,7 @@
 using namespace std;
 using namespace physim;
 
-const int matsz=128*6;
+const int matsz=128*2;
 const int nblayer=1;
 // application entry point
 class order4{
@@ -106,12 +106,13 @@ public :
 
 	
 class calcsimple{
-	const int zoom=1;
+	const int zoom=2;
 	
 	order4 order;
-	bitmap<matsz,matsz> bm;
-	bitmap<matsz,matsz> floc;
-	loglay log;
+	bitmap<matsz,matsz> bm,bbm;
+	bitmap<matsz,matsz> floc,yfloc,nfloc;
+	bitmap<matsz,matsz> difus,inhib;
+	//loglay log;
 
 	bitmap<matsz,matsz> scramble(bitmap<matsz,matsz> input){
 		return input|input.xxu()|input.xxd()|input.xxr()|input.xxl();
@@ -121,41 +122,122 @@ public :
 	int szx(){return matsz*zoom;}
 	int szy(){return matsz*zoom;}
 	unsigned int col(int px, int py){
+
 		int x=px/zoom;
 		int y=py/zoom;
 		int val=bm.get(x,y);
-		int r=(val&1) * 255;
-		int v= ((1&(val>>1)) * 255);
-		int b= ((1&(val>>2)) * 255);
-			
+		if(val!=0) return 0x00|(0x00<<8)|(0x7F<<16);
 
-		return log.get(x,y);
-		{if(val==0) return 255; else return 255<<8;}
-		//if(dir!=4) return r|(v<<8)|(b<<16);
-		//return val;
+		val=nfloc.get(x,y);
+		if(val!=0) return 0x70|(0xFF<<8)|(0x00<<16);
+	
+		val=floc.get(x,y);
+		if(val!=0) return 0xFF|(0xFF<<8)|(0xFF<<16);
+		val=yfloc.get(x,y);
+		if(val!=0) return 0x70|(0x70<<8)|(0x70<<16);
+		val=bbm.get(x,y);
+		if(val!=0) return 0x00|(0x00<<8)|(0xFF<<16);
+
+		val=inhib.get(x,y);
+		if(val!=0) return 0x40|(0x00<<8)|(0x00<<16);
+
+
+		return 0;
 	}
 		
 	calcsimple(){
 		bm^=bm;
-		bm=bm.flip();
+//		bm=bm.flip();
 		bm&=order.rand();
 		bm&=order.rand();
 //		bm&=order.rand();
 
 		floc^=floc;
+		floc=~floc;
+		floc&=order.rand();
+		floc&=order.rand();
+		floc&=order.rand();
+		floc&=order.rand();
+
+		floc&=order.rand();
+		floc&=order.rand();
+		floc&=order.rand();
+		floc&=order.rand();
+
+		floc&=order.rand();
+		floc&=order.rand();
+		floc&=order.rand();
+		floc&=order.rand();
+		//floc.set(matsz/2,matsz/2,1);
+
+		yfloc^=yfloc;
+		yfloc=~yfloc;
+		yfloc&=order.rand();
+		yfloc&=order.rand();
+		yfloc&=order.rand();
+		yfloc&=order.rand();
+
+		yfloc&=order.rand();
+		yfloc&=order.rand();
+		yfloc&=order.rand();
+		yfloc&=order.rand();
+
+		yfloc&=order.rand();
+		yfloc&=order.rand();
+		yfloc&=order.rand();
+		yfloc&=order.rand();
+
+		difus^=difus;
+		difus=~difus;
+		difus&=order.rand();
+		difus&=order.rand();
+		difus&=order.rand();
+		difus&=order.rand();
+
+		difus&=order.rand();
+		difus&=order.rand();
+		difus&=order.rand();
+		difus&=order.rand();
+
+		difus&=order.rand();
+		difus&=order.rand();
+		difus&=order.rand();
+		difus&=order.rand();
 		
-		floc.set(matsz/2,matsz/2,1);
-		
+		nfloc^=nfloc;
 	}
 
 	void doit(){
-		bm=order.doit(bm);	
+		//bm.set(matsz/3,matsz/5,1);
+		bm|=difus&(~floc)&(~yfloc);
+		bm=order.doit(bm)&(~floc)&(~yfloc);	
 		
+		auto oldfloc=floc;
 		auto sc=scramble(floc);
 		floc|=sc&bm;
+		oldfloc^=floc;
+		
+		nfloc|=oldfloc;
+		nfloc&=~(scramble(oldfloc)& ~oldfloc);
+		
 		bm&=~floc;
 
-		log.push(bm | floc);
+		bbm|=scramble(nfloc)&(~floc)&(~yfloc)&order.rand()&order.rand();//&order.rand()&order.rand();
+		bbm=order.doit(bbm)&(~floc)&(~bm);
+
+		inhib|=scramble(floc&(~nfloc))&(~floc)&(~yfloc)&order.rand();//&order.rand();//&order.rand();//&order.rand();
+		inhib=order.doit(inhib)&(~floc)&(~yfloc)&(~bm);
+
+		auto tmp=bbm;
+		bbm&=~inhib;
+		inhib&=~tmp;
+
+		sc=scramble(yfloc);
+		yfloc|=sc&bbm;
+		bbm&=~yfloc;
+
+
+		//log.push(bm | floc);
 	}
 
 	void debug(){cout << endl;};
@@ -167,8 +249,8 @@ int main(int argc, char* argv[]){
 	int bouc=0;
 	int done=0;
 	calcsimple rs;
-//	display<calcsimple,rawScreen> dis(rs);
-	display<calcsimple,rawPpm> dis(rs);
+	display<calcsimple,rawScreen> dis(rs);
+//	display<calcsimple,rawPpm> dis(rs);
 	int initphase=nblayer;
 	for(int i=0;i<initphase;++i){
 		rs.doit();
@@ -176,7 +258,7 @@ int main(int argc, char* argv[]){
 	while(true) { 
 		rs.doit();
 		const int durRealTime=0;
-		const int nbNormal=2;
+		const int nbNormal=1;
 		const int nbTotla=-1;//matsz;//3500;//30000;
 		const int cycleSlow=5000;
 		if(((++bouc) % nbNormal==0 ) || (bouc %cycleSlow<durRealTime)){
@@ -185,7 +267,7 @@ int main(int argc, char* argv[]){
 			dis.paint();
 			++done;
 			if(nbTotla > -1 && bouc>nbTotla) break;
-			if(done > 1500) break;
+//			if(done > 1500) break;
 		}
 	};
 
