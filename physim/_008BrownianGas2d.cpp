@@ -6,8 +6,8 @@
 using namespace std;
 using namespace physim;
 
-const int matsz=128*3;
-const int nblayer=1;
+const int matsz=32*4;
+const int nblayer=64*2;
 // application entry point
 class order4{
 	bitstack<matsz,matsz> dat;
@@ -31,48 +31,55 @@ public :
 		auto r=m0&~m1;
 		auto l=m0&m1;
 
-		u&=(~input).xxd();
-		d&=(~input).xxu();
-		l&=(~input).xxr();
-		r&=(~input).xxl();
+		const int x=0;
+		u&=(~input).xxd(x);
+		d&=(~input).xxu(x);
+		l&=(~input).xxr(x);
+		r&=(~input).xxl(x);
 	
-//		u&=(~input).xxd().xxd();
-//		d&=(~input).xxu().xxu();
-//		l&=(~input).xxr().xxr();
-//		r&=(~input).xxl().xxl();
 
-		auto xu=(u & input).xxu();
-		auto xd=(d & input).xxd();
-		auto xl=(l & input).xxl();
-		auto xr=(r & input).xxr();
+		auto xu=(u & input).xxu(x);
+		auto xd=(d & input).xxd(x);
+		auto xl=(l & input).xxl(x);
+		auto xr=(r & input).xxr(x);
 
 		auto coli= (xu&xd) | (xu & xr) | (xu & xl);
 		coli|= (xd&xr) | (xd&xl);
 		coli|= (xl&xr);
 		coli=~coli;
 	
-		u&=coli.xxd();
-		d&=coli.xxu();
-		l&=coli.xxr();
-		r&=coli.xxl();
+		u&=coli.xxd(x);
+		d&=coli.xxu(x);
+		l&=coli.xxr(x);
+		r&=coli.xxl(x);
 
 
 		auto imm=input & (~u) & (~d) & (~l) & (~r) ;
 		
 
-		xu=(u & input).xxu();
-		xd=(d & input).xxd();
-		xl=(l & input).xxl();
-		xr=(r & input).xxr();
+		xu=(u & input).xxu(x);
+		xd=(d & input).xxd(x);
+		xl=(l & input).xxl(x);
+		xr=(r & input).xxr(x);
 
 
 
+		auto bord=input;
+		bord^=bord;
+		bord=~bord;
+		bord=bord.shl().shl();
+		bord=bord.shr();
+		bord=bord.shu().shu();
+		bord=bord.shd();	
+		
 
 		auto res=xu;
 		res|=xd;
 		res|=xr;
 		res|=xl;
 		res|=imm;
+
+		if(x!=1) res&=bord;
 		return res;
 	}
 
@@ -93,6 +100,7 @@ public :
 		const int nbLevel=8;
 		const int mult=(255/(nbLevel*2));
 		if(raw==0) return 0;
+	//	return 0xFFFFFF;
 		int col= ((raw+(nbLevel/2))*mult);
 		if(col<255) return col/2|(col<<8)|(col/2<<16);
 		//if(raw<nbLevel) return ((raw)*mult) << 16;
@@ -133,7 +141,7 @@ public :
 	calcsimple(){
 		bm^=bm;
 		//bm.set(matsz/2,matsz/2,1);
-		bm=bm.flip();
+		//bm=bm.flip();
 		bm&=order.rand();
 		bm&=order.rand();
 		bm&=order.rand();
@@ -141,6 +149,12 @@ public :
 	}
 
 	void doit(){
+
+		bm.set(matsz/2,matsz/2,1);
+		//bm.set(matsz/2+1,matsz/2,1);
+		//bm.set(matsz/2-1,matsz/2,1);
+		//bm.set(matsz/2,matsz/2+1,1);
+		//bm.set(matsz/2,matsz/2-1,1);
 		bm=order.doit(bm);	
 
 		log.push(bm);
