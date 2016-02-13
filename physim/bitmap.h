@@ -95,19 +95,19 @@ public :
 
 
 	const bitmap xxl(const int loop=1, const int v=1) const{
-		return loop?rol(v):shl(v);
+		return loop==1?rol(v):shl(v);
 	}
 	
 	const bitmap xxr(const int loop=1, const int v=1) const{
-		return loop?ror(v):shr(v);
+		return loop==1?ror(v):shr(v);
 	}
 	
 	const bitmap xxu(const int loop=1, const int v=1) const{
-		return loop?rou(v):shu(v);
+		return loop==1?rou(v):shu(v);
 	}
 	
 	const bitmap xxd(const int loop=1, const int v=1) const{
-		return loop?rod(v):shd(v);
+		return loop==1?rod(v):shd(v);
 	}
 
 	const bitmap operator~() const{
