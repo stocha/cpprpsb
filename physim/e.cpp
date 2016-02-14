@@ -262,7 +262,7 @@ public :
 		bmneg=bmneg& ~both;
 
 		auto sc0=sig0b;
-		auto push=(~sc0)&(src0|src1|sig1)&froz;
+		auto push=(src0|src1|sig1);//&froz;//(~sc0)&;
 		push=scramble(push)&froz&(~sc0);
 		sig0b=sig0a;
 		sig0a=sig1;
