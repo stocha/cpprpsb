@@ -6,8 +6,8 @@
 using namespace std;
 using namespace physim;
 
-const int matsz=32*3;
-const int nblayer=64*8*4;
+const int matsz=32*2;
+const int nblayer=4;
 // application entry point
 class order4{
 	bitstack<matsz,matsz> dat;
@@ -98,7 +98,7 @@ public :
 	}
 	unsigned int get(int px, int py){
 		int raw=dat.getsum(px,py);
-		return getstcol(raw);
+		//return getstcol(raw);
 		const int nbLevel=8;
 		const int mult=(255/(nbLevel*2));
 		if(raw==0) return 0;
@@ -171,24 +171,42 @@ class calcsimple{
 	
 	order4 order;
 	bitmap<matsz,matsz> bm;
-	loglay log;
+	bitmap<matsz,matsz> bmneg;
+	bitmap<matsz,matsz> froz,sig1,sig0a,sig0b;
+
+	//loglay log;
 
 public :
 	int szx(){return matsz*zoom;}
 	int szy(){return matsz*zoom;}
-	unsigned int col(int px, int py){
+	unsigned int col(int px, int py, bitmap<matsz,matsz> bm){
 		int x=px/zoom;
 		int y=py/zoom;
-		int val=bm.get(x,y);
-		int r=(val&1) * 255;
-		int v= ((1&(val>>1)) * 255);
-		int b= ((1&(val>>2)) * 255);
 			
 
-		return log.get(x,y);
-		{if(val==0) return 255; else return 255<<8;}
-		//if(dir!=4) return r|(v<<8)|(b<<16);
-		//return val;
+		const bool f4=sig1.get(x,y)!=0;
+		const bool f1=bmneg.get(x,y)!=0;
+		const bool f2=bm.get(x,y)!=0;
+		const bool f3=froz.get(x,y)!=0;
+
+		if(f4) return 0xFFFFFF;else
+		if(f1) return 0x00FF00;else
+		if(f2) return 0x7F00FF;else
+		if(f3) return 0xFF0000;else
+		
+		return 0x000000;
+
+
+
+		//return log.get(x,y);
+		return 0x00;
+	}
+
+	unsigned int col(int px, int py){
+		int res=col(px,py,bm);	
+		int res2=col(px,py,bmneg);
+
+		return res|res2;
 	}
 		
 	calcsimple(){
@@ -199,18 +217,58 @@ public :
 		bm&=order.rand();
 		bm&=order.rand();
 		bm&=order.rand();
+
+		bmneg^=bmneg;
+		froz^=froz;
 	}
+	bitmap<matsz,matsz> scramble(bitmap<matsz,matsz> x){
+		return x|x.shl()|x.shr()|x.shu()|x.shd();
+		}
 
 	void doit(){
 
-		bm.set(matsz/2,matsz/2,1);
-		//bm.set(matsz/2+1,matsz/2,1);
-		//bm.set(matsz/2-1,matsz/2,1);
-		//bm.set(matsz/2,matsz/2+1,1);
-		//bm.set(matsz/2,matsz/2-1,1);
-		bm=order.doit(bm);	
 
-		log.push(bm);
+
+		auto src0=bm;
+		src0^=src0;
+		src0.set(matsz/2-matsz/3,matsz/2-matsz/6,1);
+		auto src1=bmneg;
+		src1^=src1;
+		src1.set(matsz/2+matsz/5,matsz/2+matsz/4,1);
+		
+		bm|=src0;
+		bmneg|=src1;
+		bm=order.doit(bm);	
+		bmneg=order.doit(bmneg);	
+
+		auto both=bm&bmneg;
+		froz|=both;
+		both=scramble(froz);
+		both&=bm|bmneg;
+		froz|=both;
+		both=froz;
+
+		auto r=order.rand();
+		r&=order.rand();
+		r&=order.rand();
+		r&=order.rand();
+		r&=order.rand();
+		r&=order.rand();
+		r&=order.rand();
+
+		//froz=froz& ~r;
+
+		bm=bm& ~both;
+		bmneg=bmneg& ~both;
+
+		auto sc0=sig0b;
+		auto push=(~sc0)&(src0|src1|sig1)&froz;
+		push=scramble(push)&froz&(~sc0);
+		sig0b=sig0a;
+		sig0a=sig1;
+		sig1=push;	
+
+	//	log.push(bm);
 	}
 
 	void debug(){cout << endl;};
@@ -230,7 +288,7 @@ int main(int argc, char* argv[]){
 	while(true) { 
 		rs.doit();
 		const int durRealTime=0;
-		const int nbNormal=4*10;
+		const int nbNormal=1;//2*50;
 		const int nbTotla=-1;//matsz;//3500;//30000;
 		const int cycleSlow=5000;
 		if(((++bouc) % nbNormal==0 ) || (bouc %cycleSlow<durRealTime)){
