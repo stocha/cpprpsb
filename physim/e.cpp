@@ -167,11 +167,11 @@ public :
 
 	
 class calcsimple{
-	const int zoom=2;
+	const int zoom=1;
 	
 	order4 order;
 	bitmap<matsz,matsz> bm;
-	bitmap<matsz,matsz> bmneg;
+	bitmap<matsz,matsz> bmneg,border;
 	bitmap<matsz,matsz> froz,sig1,sig0a,sig0b;
 
 	//loglay log;
@@ -189,7 +189,7 @@ public :
 		const bool f2=bm.get(x,y)!=0;
 		const bool f3=froz.get(x,y)!=0;
 
-		if(f4) return 0xFFFFFF;else
+		//if(f4) return 0xFFFFFF;else
 		if(f1) return 0x00FF00;else
 		if(f2) return 0x7F00FF;else
 		if(f3) return 0xFF0000;else
@@ -220,26 +220,50 @@ public :
 
 		bmneg^=bmneg;
 		froz^=froz;
+		//froz.set(matsz/2,matsz/2,1);
+		//froz.set(matsz/2+1,matsz/2,1);
+		//froz.set(matsz/2+2,matsz/2,1);
+		//froz.set(matsz/2+3,matsz/2,1);
+		//froz.set(matsz/2,matsz/2+1,1);
+		//froz.set(matsz/2,matsz/2+2,1);
+		//froz.set(matsz/2,matsz/2+3,1);
+		
+		border=~border;
+		border=~reduc(border);
+		border=scramble(border);
+		border=scramble(border);
+		//bmneg=border;
+
+
 	}
 	bitmap<matsz,matsz> scramble(bitmap<matsz,matsz> x){
 		return x|x.shl()|x.shr()|x.shu()|x.shd();
 		}
+	bitmap<matsz,matsz> reduc(bitmap<matsz,matsz> x){
+		return x&x.shl()&x.shr()&x.shu()&x.shd();
+		}
+
 
 	void doit(){
-
+		//bmneg|=border;
 
 
 		auto src0=bm;
 		src0^=src0;
-		src0.set(matsz/2-matsz/3,matsz/2-matsz/6,1);
+		//src0.set(matsz/2-matsz/7,matsz/2-matsz/6,1);
+		src0.set(matsz/2-matsz/3,matsz/2-matsz/5,1);
 		auto src1=bmneg;
 		src1^=src1;
+		//src1.set(matsz/2+matsz/8,matsz/2+matsz/9,1);
 		src1.set(matsz/2+matsz/5,matsz/2+matsz/4,1);
 		
 		bm|=src0;
 		bmneg|=src1;
 		bm=order.doit(bm);	
 		bmneg=order.doit(bmneg);	
+
+		
+		auto center=froz;center^=center;//center.set(matsz/2,matsz/2,1);
 
 		auto both=bm&bmneg;
 		froz|=both;
@@ -255,6 +279,8 @@ public :
 		r&=order.rand();
 		r&=order.rand();
 		r&=order.rand();
+		r&=order.rand();
+		r&=order.rand();
 
 		//froz=froz& ~r;
 
@@ -262,11 +288,19 @@ public :
 		bmneg=bmneg& ~both;
 
 		auto sc0=sig0b;
-		auto push=(src0|src1|sig1);//&froz;//(~sc0)&;
+		auto push=(src0|src1|sig1|center);//&froz;//(~sc0)&;
 		push=scramble(push)&froz&(~sc0);
 		sig0b=sig0a;
 		sig0a=sig1;
+		auto last=sig1;
+		last&=~sig1.shl();
+		last&=~sig1.shr();
+		last&=~sig1.shu();
+		last&=~sig1.shd();
 		sig1=push;	
+		last&=~push;
+		bm|=last;
+
 
 	//	log.push(bm);
 	}
