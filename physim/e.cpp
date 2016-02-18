@@ -6,23 +6,41 @@
 using namespace std;
 using namespace physim;
 
-const int matsz=32*2;
-const int nblayer=4;
+const int matsz=32*2*8;
+const int nblayer=1;//127*2;
 // application entry point
 class order4{
 	bitstack<matsz,matsz> dat;
+	bitmap<matsz,matsz> onde,o1,o2;
+	bool ondep;
 
 public :
-	order4() : dat(2){
+	order4(bool pressure) : dat(2),ondep(pressure){
 		dat.clear();
 		dat.set(matsz/2,matsz/2,1);
 		for(int i=0;i<matsz;i++){
 			dat.randomize();
 		}
 		cout << "Randomized" << endl;
+		onde^=onde;
+		o1^=o1;
+		o2^=o2;
+		
 	}
-
+	bitmap<matsz,matsz> scramble(bitmap<matsz,matsz> x){
+		return x|x.shl()|x.shr()|x.shu()|x.shd();
+		}
+	
+	bitmap<matsz,matsz> getonde(){ return onde;}
 	const bitmap<matsz,matsz> doit(bitmap<matsz,matsz> input){
+
+		onde.set(matsz/2,matsz/2,1);
+		onde&=~(o1 | o2);
+		auto nonde=scramble(onde)& (~(o1 | o2));
+		o2=o1;
+		o1=onde;
+		onde=nonde;
+
 		dat.randomize();
 		auto m0=dat.getmap(0);
 		auto m1=dat.getmap(1);
@@ -31,17 +49,23 @@ public :
 		auto r=m0&~m1;
 		auto l=m0&m1;
 
-		const int x=0;
-		u&=(~input).xxd(x);
-		d&=(~input).xxu(x);
-		l&=(~input).xxr(x);
-		r&=(~input).xxl(x);
-	
+		auto xu=input;
+		auto xd=input;
+		auto xl=input;
+		auto xr=input;
 
-		auto xu=(u & input).xxu(x);
-		auto xd=(d & input).xxd(x);
-		auto xl=(l & input).xxl(x);
-		auto xr=(r & input).xxr(x);
+		const int x=0;
+if(true){
+		if(!ondep) {onde^=onde;}
+		u&=(~input).xxd(x) & (~onde);
+		d&=(~input).xxu(x) & (~onde);
+		l&=(~input).xxr(x) & (~onde);
+		r&=(~input).xxl(x) & (~onde);
+	
+		xu=(u & input).xxu(x);
+		xd=(d & input).xxd(x);
+		xl=(l & input).xxl(x);
+		xr=(r & input).xxr(x);
 
 		auto coli= (xu&xd) | (xu & xr) | (xu & xl);
 		coli|= (xd&xr) | (xd&xl);
@@ -52,16 +76,40 @@ public :
 		d&=coli.xxu(x);
 		l&=coli.xxr(x);
 		r&=coli.xxl(x);
+		if(ondep){
+			
+			auto vide=input&onde;
+
+			vide=scramble(vide)&(~onde);
+			vide&=rand();
+//			vide&=rand();
+		
+			u|=vide.xxd(x)&(input);
+			d|=vide.xxu(x)&(input);
+			l|=vide.xxr(x)&(input);
+			r|=vide.xxl(x)&(input);
+
+		//	vide=l;
+		//	d&=~vide;
+		//	vide|=d;
+		//	u&=~vide;
+		//	vide|=u;
+		//	r&=~vide;
+		//	vide|=r;
+			
+		}
 
 
-		auto imm=input & (~u) & (~d) & (~l) & (~r) ;
+
 		
 
+}
 		xu=(u & input).xxu(x);
 		xd=(d & input).xxd(x);
 		xl=(l & input).xxl(x);
 		xr=(r & input).xxr(x);
 
+		auto imm=input & (~u) & (~d) & (~l) & (~r) ;
 
 
 		auto bord=input;
@@ -170,11 +218,12 @@ class calcsimple{
 	const int zoom=1;
 	
 	order4 order;
+	order4 orderp;
 	bitmap<matsz,matsz> bm;
 	bitmap<matsz,matsz> bmneg,border;
 	bitmap<matsz,matsz> froz,sig1,sig0a,sig0b;
 
-	//loglay log;
+	loglay log;
 
 public :
 	int szx(){return matsz*zoom;}
@@ -184,55 +233,50 @@ public :
 		int y=py/zoom;
 			
 
-		const bool f4=sig1.get(x,y)!=0;
-		const bool f1=bmneg.get(x,y)!=0;
-		const bool f2=bm.get(x,y)!=0;
-		const bool f3=froz.get(x,y)!=0;
+//		const bool f4=sig1.get(x,y)!=0;
+//		const bool f1=bmneg.get(x,y)!=0;
+//		const bool f2=bm.get(x,y)!=0;
+//		const bool f3=froz.get(x,y)!=0;
 
 		//if(f4) return 0xFFFFFF;else
-		if(f1) return 0x00FF00;else
-		if(f2) return 0x7F00FF;else
-		if(f3) return 0xFF0000;else
+//		if(f1) return 0x00FF00;else
+//		if(f2) return 0x7F00FF;else
+//		if(f3) return 0xFF0000;else
 		
-		return 0x000000;
+//		return 0x000000;
 
 
 
-		//return log.get(x,y);
-		return 0x00;
+		//return 0x00;
 	}
 
 	unsigned int col(int px, int py){
-		int res=col(px,py,bm);	
-		int res2=col(px,py,bmneg);
 
-		return res|res2;
+		int x=px/zoom;
+		int y=py/zoom;
+
+		//if(bmneg.get(x,y)==1) {
+		//	return 0x0000FF;
+		//}
+		//if(bm.get(x,y)==1) {
+		//	return 0x007F7F;
+	//	}
+		//if(orderp.getonde().get(x,y)==1) {
+		//	return 0x1F0000;
+		//}
+		return log.get(x,y);
+		return 0x000000;
 	}
 		
-	calcsimple(){
+	calcsimple() : order(false), orderp(false){
 		bm^=bm;
-		//bm.set(matsz/2,matsz/2,1);
-		//bm=bm.flip();
-		bm&=order.rand();
-		bm&=order.rand();
-		bm&=order.rand();
-		bm&=order.rand();
-
 		bmneg^=bmneg;
 		froz^=froz;
-		//froz.set(matsz/2,matsz/2,1);
-		//froz.set(matsz/2+1,matsz/2,1);
-		//froz.set(matsz/2+2,matsz/2,1);
-		//froz.set(matsz/2+3,matsz/2,1);
-		//froz.set(matsz/2,matsz/2+1,1);
-		//froz.set(matsz/2,matsz/2+2,1);
-		//froz.set(matsz/2,matsz/2+3,1);
 		
 		border=~border;
 		border=~reduc(border);
 		border=scramble(border);
 		border=scramble(border);
-		//bmneg=border;
 
 
 	}
@@ -245,64 +289,20 @@ public :
 
 
 	void doit(){
-		//bmneg|=border;
-
-
-		auto src0=bm;
-		src0^=src0;
-		//src0.set(matsz/2-matsz/7,matsz/2-matsz/6,1);
-		src0.set(matsz/2-matsz/3,matsz/2-matsz/5,1);
-		auto src1=bmneg;
-		src1^=src1;
-		//src1.set(matsz/2+matsz/8,matsz/2+matsz/9,1);
-		src1.set(matsz/2+matsz/5,matsz/2+matsz/4,1);
+		//bm^=bm;
+		const int nbbou=1;//40*2;
+		for(int i=0;i<nbbou;i++){
 		
-		bm|=src0;
-		bmneg|=src1;
-		bm=order.doit(bm);	
-		bmneg=order.doit(bmneg);	
+			bm.set(matsz/2,matsz/2,1);
+			bmneg.set(matsz/2,matsz/2,1);
+			bm=order.doit(bm);	
+			bmneg=orderp.doit(bmneg);	
 
-		
-		auto center=froz;center^=center;//center.set(matsz/2,matsz/2,1);
-
-		auto both=bm&bmneg;
-		froz|=both;
-		both=scramble(froz);
-		both&=bm|bmneg;
-		froz|=both;
-		both=froz;
-
-		auto r=order.rand();
-		r&=order.rand();
-		r&=order.rand();
-		r&=order.rand();
-		r&=order.rand();
-		r&=order.rand();
-		r&=order.rand();
-		r&=order.rand();
-		r&=order.rand();
-
-		//froz=froz& ~r;
-
-		bm=bm& ~both;
-		bmneg=bmneg& ~both;
-
-		auto sc0=sig0b;
-		auto push=(src0|src1|sig1|center);//&froz;//(~sc0)&;
-		push=scramble(push)&froz&(~sc0);
-		sig0b=sig0a;
-		sig0a=sig1;
-		auto last=sig1;
-		last&=~sig1.shl();
-		last&=~sig1.shr();
-		last&=~sig1.shu();
-		last&=~sig1.shd();
-		sig1=push;	
-		last&=~push;
-		bm|=last;
+		}	
 
 
-	//	log.push(bm);
+
+		log.push(bm);
 	}
 
 	void debug(){cout << endl;};
@@ -322,7 +322,7 @@ int main(int argc, char* argv[]){
 	while(true) { 
 		rs.doit();
 		const int durRealTime=0;
-		const int nbNormal=1;//2*50;
+		const int nbNormal=1;//32;//2*50;
 		const int nbTotla=-1;//matsz;//3500;//30000;
 		const int cycleSlow=5000;
 		if(((++bouc) % nbNormal==0 ) || (bouc %cycleSlow<durRealTime)){
